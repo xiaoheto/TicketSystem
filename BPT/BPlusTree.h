@@ -1,3 +1,6 @@
+#ifndef BPLUSTREE_H
+#define BPLUSTREE_H
+
 #include <string>
 using std::string;
 using std::fstream;
@@ -509,3 +512,4 @@ public:
         base_file.end();
     }
 };
+#endif

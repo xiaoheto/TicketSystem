@@ -14,7 +14,7 @@ class MyChar {
     char myChar[length];
 
 public:
-    MyChar() = default;
+    MyChar() :myChar(""){}
 
     MyChar(const string &str) {
         strcpy(myChar,str.c_str());

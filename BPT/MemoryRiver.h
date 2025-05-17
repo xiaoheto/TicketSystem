@@ -30,7 +30,7 @@ public:
         if (!file || clearFile) {
             file.open(filename, std::ios::out | ios::binary);
             file.close();
-            file.open(filename, std::ios::in | std::ios::out);
+            file.open(filename, std::ios::in | std::ios::out | ios::binary);
             int tmp = -1, tmp2 = 0;
             file.write(reinterpret_cast<char *>(&tmp), sizeof(int));
             for (int i = 1; i < info_len; ++i){
