@@ -55,64 +55,146 @@ vector<int> getInt(const string &input) {
 //     return 0;
 // }
 
-void quick_sort(vector<int> &arr, int left, int right) {
-    if (left >= right) return;
-    int pivot = arr[left + (right - left) / 2];
-    int i = left, j = right;
-    while (i <= j) {
-        while (arr[i] < pivot) ++i;
-        while (arr[j] > pivot) --j;
-        if (i <= j) {
-            std::swap(arr[i], arr[j]);
-            ++i;
-            --j;
-        }
-    }
-    if (left < j) quick_sort(arr, left, j);
-    if (i < right) quick_sort(arr, i, right);
-}
-
 int main() {
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
+    std::cout.tie(nullptr);
 
-    BPTree<MyChar<65>,int> db;
-
-    int n;
-    std::cin >> n;
-    std::string line;
-    std::getline(std::cin, line); // 读掉换行符
-
-    for (int i = 0; i < n; ++i) {
-        std::getline(std::cin, line);
-        std::stringstream ss(line);
-        std::string command;
-        MyChar<65>index;
-        int value;
-
-        ss >> command;
-
-        if (command == "insert") {
-            ss >> index >> value;
-            db.insert(index, value);
-        } else if (command == "delete") {
-            ss >> index >> value;
-            db.erase(index, value);
-        } else if (command == "find") {
-            ss >> index;
-            vector<int> result = db.query(index);
-            if (result.empty()) {
-                std::cout << "null\n";
-            } else {
-                quick_sort(result, 0, result.size() - 1);
-                for (int j = 0; j < result.size(); ++j) {
-                    if (j) std::cout << ' ';
-                    std::cout << result[j];
+    UserManagement usermanagement;
+    string input;
+    while (getline(cin, input)) {
+        Command command(input);
+        if (command.cmd == "add_user") {
+            MyChar<24> cur_username;
+            MyChar<24> username;
+            MyChar<32> password;
+            MyChar<24> name;
+            MyChar<32> mailAddr;
+            int privilege = 10;
+            if (!usermanagement.flag) {
+                while (command.current < command.count) {
+                    string key = command.getNext();
+                    if (key == "-u") {
+                        username = command.getNext();
+                    } else if (key == "-p") {
+                        password = command.getNext();
+                    } else if (key == "-n") {
+                        name = command.getNext();
+                    } else if (key == "-m") {
+                        mailAddr = command.getNext();
+                    }
+                    command.current += 2;
                 }
-                std::cout << '\n';
+                usermanagement.flag = true;
+                usermanagement.add_first_user(username, password, name, mailAddr);
+            } else {
+                while (command.current < command.count) {
+                    string key = command.getNext();
+                    if (key == "-c") {
+                        cur_username = command.getNext();
+                    } else if (key == "-u") {
+                        username = command.getNext();
+                    } else if (key == "-p") {
+                        password = command.getNext();
+                    } else if (key == "-n") {
+                        name = command.getNext();
+                    } else if (key == "-m") {
+                        mailAddr = command.getNext();
+                    } else if (key == "-g") {
+                        privilege = command.str_to_int(command.getNext());
+                    }
+                    command.current += 2;
+                }
+                usermanagement.add_user(cur_username, username, password, name, mailAddr, privilege);
+            }
+        } else if (command.cmd == "login") {
+            MyChar<24> username;
+            MyChar<32> password;
+            while (command.current < command.count) {
+                string key = command.getNext();
+                if (key == "-u") {
+                    username = command.getNext();
+                } else if (key == "-p") {
+                    password = command.getNext();
+                }
+                command.current += 2;
+            }
+            usermanagement.login(username, password);
+        } else if (command.cmd == "logout") {
+            string key = command.getNext();
+            MyChar<24> username;
+            username = command.getNext();
+            usermanagement.logout(username);
+        } else if (command.cmd == "query_profile") {
+            MyChar<24> cur_username;
+            MyChar<24> username;
+            while (command.current < command.count) {
+                string key = command.getNext();
+                if (key == "-c") {
+                    cur_username = command.getNext();
+                } else if (key == "-u") {
+                    username = command.getNext();
+                }
+                command.current += 2;
+            }
+            cout << usermanagement.query_profile(cur_username, username) << '\n';
+        } else if (command.cmd == "modify_profile") {
+            MyChar<24> cur_username;
+            MyChar<24> username;
+            MyChar<32> password;
+            MyChar<24> name;
+            MyChar<32> mailAddr;
+            int privilege;
+            while (command.current < command.count) {
+                string key = command.getNext();
+                if (key == "-c") {
+                    cur_username = command.getNext();
+                } else if (key == "-u") {
+                    username = command.getNext();
+                } else if (key == "-p") {
+                    password = command.getNext();
+                } else if (key == "-n") {
+                    name = command.getNext();
+                } else if (key == "-m") {
+                    mailAddr = command.getNext();
+                } else if (key == "-g") {
+                    privilege = command.str_to_int(command.getNext());
+                }
+                command.current += 2;
+            }
+            cout << usermanagement.modify_profile(cur_username, username, password, name, mailAddr, privilege) << '\n';
+        } else if (command.cmd == "add_train") {
+            MyChar<24> trainID;
+            int stationNum;
+            int seatNum;
+            vector<string> stations;
+            vector<int>prices;
+            Clock startTime;
+            vector<int>travelTimes;
+            vector<int>stopoverTimes;
+            Date saleDate;
+            MyChar<2> type;
+
+            while(command.current < command.count) {
+                string key = command.getNext();
+                if (key == "-i") {
+                    trainID = command.getNext();
+                }
+                else if (key == "-n") {
+                    stationNum = command.str_to_int(command.getNext());
+                }
+                else if (key == "-m") {
+                    seatNum = command.str_to_int(command.getNext());
+                }
+                else if (key == "-s") {
+                    string s = command.getNext();
+                    stations = getStr(s);
+                }
+                else if (key == "-p") {
+                    string p = command.getNext();
+                }
             }
         }
+        return 0;
     }
-
-    return 0;
 }
