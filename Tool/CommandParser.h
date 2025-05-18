@@ -27,7 +27,7 @@ public:
 
     static int str_to_int(const string &s) {
         int res = 0;
-        for(auto i:s) {
+        for (auto i: s) {
             res *= 10;
             res += i - '0';
         }
@@ -35,8 +35,8 @@ public:
     }
 
     Command(const string &input, char split = ' '): input(input), split_char(split) {
-        while(position < input.length() && input[position] == split_char) {
-            ++position;//找到第一个非分隔符
+        while (position < input.length() && input[position] == split_char) {
+            ++position; //找到第一个非分隔符
         }
         countArguments();
         timeStamp = getNext();
@@ -47,7 +47,7 @@ public:
         if (position >= input.length() ||
             input[position] == '\r' || input[position] == '\n') {
             return "";
-            }
+        }
 
         std::string result;
         // 读取直到下一个分隔符或结束
@@ -94,7 +94,6 @@ public:
             }
         }
     }
-
 };
 
 #endif //COMMANDPARSER_H

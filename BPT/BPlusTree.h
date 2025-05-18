@@ -88,7 +88,7 @@ class BPTree {
     int root;
 
     // find the first pos that is larger than kv
-    static int findPos(int l, int r, Node cur_node, KVPair<K, T> kv) {
+    int findPos(int l, int r, Node cur_node, KVPair<K, T> kv) {
         while (l < r) {
             int mid = (l + r) / 2;
             if (cur_node.kv_pair[mid] > kv) {
@@ -430,9 +430,9 @@ class BPTree {
     }
 
 public:
-    BPTree() {
+    explicit BPTree(const string &filename = "BPT.txt") {
         root = -1;
-        base_file.initialise("BPTree.dat");
+        base_file.initialise(filename);
         base_file.get_info(root, 1);
     }
 

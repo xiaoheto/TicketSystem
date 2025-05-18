@@ -5,20 +5,25 @@
 #ifndef TIME_H
 #define TIME_H
 #include <string>
+#include <cstring>
 using std::string;
 using std::ostream;
 
-int Month[13] = {0,31,28,31,30,31,30,31,31,30,31,30,31};
+int Month[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 class Clock {
     int hour;
     int minute;
 
 public:
-
     Clock() = default;
 
-    Clock(int h,int m):hour(h),minute(m) {
+    Clock(int h, int m): hour(h), minute(m) {
+    }
+
+    Clock(const string &input) {
+        hour = std::stoi(input.substr(0, 2));
+        minute = std::stoi(input.substr(3, 2));
     }
 
     Clock(const Clock &other) = default;
@@ -53,7 +58,7 @@ public:
         return std::to_string(n);
     }
 
-    friend ostream &operator<<(ostream &out,const Clock &obj) {
+    friend ostream &operator<<(ostream &out, const Clock &obj) {
         out << int_to_clock(obj.hour) << ':' << int_to_clock(obj.minute);
         return out;
     }
@@ -66,7 +71,12 @@ class Date {
 public:
     Date() = default;
 
-    Date(int m,int d):month(m),day(d) {
+    Date(int m, int d): month(m), day(d) {
+    }
+
+    Date(const string &input) {
+        month = std::stoi(input.substr(0, 2));
+        day = std::stoi(input.substr(3, 2));
     }
 
     Date(const Date &other) = default;
@@ -97,12 +107,12 @@ public:
         return day < other.day;
     }
 
-    int operator-(const Date &other) const{
+    int operator-(const Date &other) const {
         if (month == other.month) {
             return day - other.day;
         }
         int ans = 0;
-        for(int i = other.month + 1;i < month;++i) {
+        for (int i = other.month + 1; i < month; ++i) {
             ans += Month[i];
         }
 
@@ -118,7 +128,7 @@ public:
         return std::to_string(n);
     }
 
-    friend ostream &operator<<(ostream &out,const Date &obj) {
+    friend ostream &operator<<(ostream &out, const Date &obj) {
         out << int_to_date(obj.month) << '-' << int_to_date(obj.day);
         return out;
     }

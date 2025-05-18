@@ -14,9 +14,10 @@ class Error : public exception {
     string err;
 
 public:
-    Error() noexcept :err("Unknown Error") {}
+    Error() noexcept : err("Unknown Error") {
+    }
 
-    explicit Error(const string &message) noexcept :err(message) {
+    explicit Error(const string &message) noexcept : err(message) {
     }
 
     const char *what() const noexcept override {

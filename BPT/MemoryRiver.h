@@ -12,7 +12,6 @@ using std::ios;
 
 template<typename T, int info_len = 2>
 class MemoryRiver {
-
     fstream file;
     string filename;
     int sizeofT = sizeof(T);
@@ -20,9 +19,10 @@ class MemoryRiver {
 public:
     MemoryRiver() = default;
 
-    MemoryRiver(const string &file_name) : filename(file_name) {}
+    MemoryRiver(const string &file_name) : filename(file_name) {
+    }
 
-    void initialise(const string &FN = "",bool clearFile = false) {
+    void initialise(const string &FN = "", bool clearFile = false) {
         if (!FN.empty()) {
             filename = FN;
         }
@@ -33,7 +33,7 @@ public:
             file.open(filename, std::ios::in | std::ios::out | ios::binary);
             int tmp = -1, tmp2 = 0;
             file.write(reinterpret_cast<char *>(&tmp), sizeof(int));
-            for (int i = 1; i < info_len; ++i){
+            for (int i = 1; i < info_len; ++i) {
                 file.write(reinterpret_cast<char *>(&tmp2), sizeof(int));
             }
         }

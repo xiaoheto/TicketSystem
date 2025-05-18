@@ -1,4 +1,3 @@
-#include <chrono>
 #include <string>
 #include <sstream>
 #include <string>
@@ -27,7 +26,7 @@ using std::getline;
 
 vector<string> getStr(const string &input) {
     vector<string> res;
-    Command temp(input,'|');
+    Command temp(input, '|');
     temp.position = 0;
     while (temp.count--) {
         res.push_back(temp.getNext());
@@ -36,22 +35,33 @@ vector<string> getStr(const string &input) {
 }
 
 vector<int> getInt(const string &input) {
-    vector<int>res;
-    Command temp(input,'|');
+    vector<int> res;
+    Command temp(input, '|');
     temp.position = 0;
-    while(temp.count--) {
+    while (temp.count--) {
         res.push_back(temp.str_to_int(temp.getNext()));
     }
     return res;
 }
 
+Clock getStartTime(const string &input) {
+    Clock clock(input);
+    return clock;
+}
+
+pair<Date, Date> getSaleDate(const string &input) {
+    Command temp(input, '|');
+    temp.position = 0;
+    string ans1 = temp.getNext();
+    string ans2 = temp.getNext();
+    return std::make_pair(Date(ans1), Date(ans2));
+}
+
 // int main() {
 //     string input;
 //     cin >> input;
-//     vector<string> res = getStr(input);
-//     for(auto i : res) {
-//         cout << i << '\n';
-//     }
+//     Clock res = getStartTime(input);
+//     cout << res << '\n';
 //     return 0;
 // }
 
@@ -137,14 +147,18 @@ int main() {
                 }
                 command.current += 2;
             }
-            cout << usermanagement.query_profile(cur_username, username) << '\n';
+            if (!usermanagement.query_profile(cur_username, username).second) {
+                cout << -1 << '\n';
+            } else {
+                cout << usermanagement.query_profile(cur_username, username).first << '\n';
+            }
         } else if (command.cmd == "modify_profile") {
             MyChar<24> cur_username;
             MyChar<24> username;
             MyChar<32> password;
             MyChar<24> name;
             MyChar<32> mailAddr;
-            int privilege;
+            int privilege = -1;
             while (command.current < command.count) {
                 string key = command.getNext();
                 if (key == "-c") {
@@ -162,39 +176,194 @@ int main() {
                 }
                 command.current += 2;
             }
-            cout << usermanagement.modify_profile(cur_username, username, password, name, mailAddr, privilege) << '\n';
+            if (!usermanagement.modify_profile(cur_username, username, password, name, mailAddr, privilege).second) {
+                cout << -1 << '\n';
+            } else {
+                cout << usermanagement.modify_profile(cur_username, username, password, name, mailAddr, privilege).first
+                        << '\n';
+            }
         } else if (command.cmd == "add_train") {
             MyChar<24> trainID;
             int stationNum;
             int seatNum;
             vector<string> stations;
-            vector<int>prices;
+            vector<int> prices;
             Clock startTime;
-            vector<int>travelTimes;
-            vector<int>stopoverTimes;
-            Date saleDate;
+            vector<int> travelTimes;
+            vector<int> stopoverTimes;
+            pair<Date, Date> saleDate;
             MyChar<2> type;
 
-            while(command.current < command.count) {
+            while (command.current < command.count) {
                 string key = command.getNext();
                 if (key == "-i") {
                     trainID = command.getNext();
-                }
-                else if (key == "-n") {
+                } else if (key == "-n") {
                     stationNum = command.str_to_int(command.getNext());
-                }
-                else if (key == "-m") {
+                } else if (key == "-m") {
                     seatNum = command.str_to_int(command.getNext());
-                }
-                else if (key == "-s") {
+                } else if (key == "-s") {
                     string s = command.getNext();
                     stations = getStr(s);
-                }
-                else if (key == "-p") {
+                } else if (key == "-p") {
                     string p = command.getNext();
+                    prices = getInt(p);
+                } else if (key == "-x") {
+                    string x = command.getNext();
+                    startTime = getStartTime(x);
+                } else if (key == "-t") {
+                    string t = command.getNext();
+                    travelTimes = getInt(t);
+                } else if (key == "-o") {
+                    string o = command.getNext();
+                    if (o == "_") {
+                        stopoverTimes.clear();
+                    } else {
+                        stopoverTimes = getInt(o);
+                    }
+                } else if (key == "-d") {
+                    string d = command.getNext();
+                    saleDate = getSaleDate(d);
+                } else if (key == "-y") {
+                    type = command.getNext();
                 }
+                command.current += 2;
             }
+            //TODO
+        } else if (command.cmd == "delete_train") {
+            MyChar<24> trainID;
+            string i = command.getNext();
+            trainID = command.getNext();
+            //TODO
+        } else if (command.cmd == "release_train") {
+            MyChar<24> trainID;
+            string i = command.getNext();
+            trainID = command.getNext();
+            //TODO
+        } else if (command.cmd == "query_train") {
+            MyChar<24> trainID;
+            Date d;
+            while (command.current < command.count) {
+                string key = command.getNext();
+                if (key == "-i") {
+                    trainID = command.getNext();
+                } else if (key == "-d") {
+                    string temp = command.getNext();
+                    Date day(temp);
+                    d = day;
+                }
+                command.current += 2;
+            }
+            //TODO
+        } else if (command.cmd == "query_ticket") {
+            Date d;
+            MyChar<24> s;
+            MyChar<24> t;
+            string p;
+            while (command.current < command.count) {
+                string key = command.getNext();
+                if (key == "-s") {
+                    s = command.getNext();
+                } else if (key == "-t") {
+                    t = command.getNext();
+                } else if (key == "-d") {
+                    string temp = command.getNext();
+                    Date tt(temp);
+                    d = tt;
+                } else if (key == "-p") {
+                    p = command.getNext();
+                }
+                command.current += 2;
+            }
+            if (p == "time") {
+                //TODO
+            } else if (p == "cost") {
+                //TODO
+            }
+        } else if (command.cmd == "query_transfer") {
+            Date d;
+            MyChar<24> s;
+            MyChar<24> t;
+            string p;
+            while (command.current < command.count) {
+                string key = command.getNext();
+                if (key == "-s") {
+                    s = command.getNext();
+                } else if (key == "-t") {
+                    t = command.getNext();
+                } else if (key == "-d") {
+                    string temp = command.getNext();
+                    Date tt(temp);
+                    d = tt;
+                } else if (key == "-p") {
+                    p = command.getNext();
+                }
+                command.current += 2;
+            }
+            if (p == "time") {
+                //TODO
+            } else if (p == "cost") {
+                //TODO
+            }
+        } else if (command.cmd == "buy_ticket") {
+            MyChar<24> username;
+            MyChar<24> trainID;
+            Date d;
+            MyChar<24> st;
+            MyChar<24> en;
+            int n;
+            string q;
+            while (command.current < command.count) {
+                string key = command.getNext();
+                if (key == "-u") {
+                    username = command.getNext();
+                } else if (key == "-i") {
+                    trainID = command.getNext();
+                } else if (key == "-d") {
+                    string temp = command.getNext();
+                    Date dd(temp);
+                    d = dd;
+                } else if (key == "-f") {
+                    st = command.getNext();
+                } else if (key == "-t") {
+                    en = command.getNext();
+                } else if (key == "-n") {
+                    n = command.str_to_int(command.getNext());
+                } else if (key == "-q") {
+                    q = command.getNext();
+                }
+                command.current += 2;
+            }
+            if (q == "true") {
+                //TODO
+            } else if (q == "false") {
+                //TODO
+            }
+        } else if (command.cmd == "query_order") {
+            string u = command.getNext();
+            MyChar<24> username = command.getNext();
+            //TODO
+        } else if (command.cmd == "refund_ticket") {
+            MyChar<24> username;
+            int n;
+            while (command.current < command.count) {
+                string key = command.getNext();
+                if (key == "-u") {
+                    username = command.getNext();
+                } else if (key == "-n") {
+                    n = command.str_to_int(command.getNext());
+                }
+                command.current += 2;
+            }
+            //TODO
+        } else if (command.cmd == "clean") {
+            //TODO:清除所有数据
+        } else if (command.cmd == "exit") {
+            //TODO:下线所有用户
+            break;
+        } else {
+            throw Error("Invalid\n");
         }
-        return 0;
     }
+    return 0;
 }
