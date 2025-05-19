@@ -2,21 +2,20 @@
 #define BPLUSTREE_H
 
 #include <string>
+#include "../STLite/vector.h"
+#include "../Tool/MyChar.h"
+#include "MemoryRiver.h"
+#include "../STLite/utility.h"
 using std::string;
 using std::fstream;
 using std::ifstream;
 using std::ofstream;
-using std::pair;
 using std::string;
 using std::ios;
 using std::string;
 using std::fstream;
 using std::ifstream;
 using std::ofstream;
-
-#include "../STLite/vector.h"
-#include "../Tool/MyChar.h"
-#include "MemoryRiver.h"
 using sjtu::vector;
 
 template<class K, class T>

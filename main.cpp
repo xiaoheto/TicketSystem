@@ -4,11 +4,17 @@
 #include <fstream>
 #include <random>
 #include <iostream>
+#include "BPT/BPlusTree.h"
+#include "Tool/CommandParser.h"
+#include "Tool/MyChar.h"
+#include "Tool/Time.h"
+#include "Management/UserManagement.h"
+
 using std::string;
 using std::fstream;
 using std::ifstream;
 using std::ofstream;
-using std::pair;
+using sjtu::pair;
 using std::string;
 using std::ios;
 using std::string;
@@ -18,11 +24,6 @@ using std::ofstream;
 using std::cin;
 using std::cout;
 using std::getline;
-#include "BPT/BPlusTree.h"
-#include "Tool/CommandParser.h"
-#include "Tool/MyChar.h"
-#include "Tool/Time.h"
-#include "Management/UserManagement.h"
 
 vector<string> getStr(const string &input) {
     vector<string> res;
@@ -49,12 +50,13 @@ Clock getStartTime(const string &input) {
     return clock;
 }
 
-pair<Date, Date> getSaleDate(const string &input) {
+SaleDate getSaleDate(const string &input) {
     Command temp(input, '|');
     temp.position = 0;
     string ans1 = temp.getNext();
     string ans2 = temp.getNext();
-    return std::make_pair(Date(ans1), Date(ans2));
+    SaleDate ans(ans1,ans2);
+    return ans;
 }
 
 // int main() {
@@ -96,7 +98,7 @@ int main() {
                     command.current += 2;
                 }
                 usermanagement.flag = true;
-                usermanagement.add_first_user(username, password, name, mailAddr);
+                cout << command.timeStamp << ' ' << usermanagement.add_first_user(username, password, name, mailAddr) << '\n';
             } else {
                 while (command.current < command.count) {
                     string key = command.getNext();
@@ -115,7 +117,7 @@ int main() {
                     }
                     command.current += 2;
                 }
-                usermanagement.add_user(cur_username, username, password, name, mailAddr, privilege);
+                cout << command.timeStamp << ' ' << usermanagement.add_user(cur_username, username, password, name, mailAddr, privilege) << '\n';
             }
         } else if (command.cmd == "login") {
             MyChar<24> username;
@@ -129,12 +131,12 @@ int main() {
                 }
                 command.current += 2;
             }
-            usermanagement.login(username, password);
+            cout << command.timeStamp << ' ' << usermanagement.login(username, password) << '\n';
         } else if (command.cmd == "logout") {
             string key = command.getNext();
             MyChar<24> username;
             username = command.getNext();
-            usermanagement.logout(username);
+            cout << command.timeStamp << ' ' << usermanagement.logout(username) << '\n';
         } else if (command.cmd == "query_profile") {
             MyChar<24> cur_username;
             MyChar<24> username;
@@ -148,9 +150,9 @@ int main() {
                 command.current += 2;
             }
             if (!usermanagement.query_profile(cur_username, username).second) {
-                cout << -1 << '\n';
+                cout << command.timeStamp << ' ' << -1 << '\n';
             } else {
-                cout << usermanagement.query_profile(cur_username, username).first << '\n';
+                cout << command.timeStamp << ' ' << usermanagement.query_profile(cur_username, username).first << '\n';
             }
         } else if (command.cmd == "modify_profile") {
             MyChar<24> cur_username;
@@ -177,9 +179,9 @@ int main() {
                 command.current += 2;
             }
             if (!usermanagement.modify_profile(cur_username, username, password, name, mailAddr, privilege).second) {
-                cout << -1 << '\n';
+                cout << command.timeStamp << ' ' << -1 << '\n';
             } else {
-                cout << usermanagement.modify_profile(cur_username, username, password, name, mailAddr, privilege).first
+                cout << command.timeStamp << ' ' << usermanagement.modify_profile(cur_username, username, password, name, mailAddr, privilege).first
                         << '\n';
             }
         } else if (command.cmd == "add_train") {
@@ -191,7 +193,7 @@ int main() {
             Clock startTime;
             vector<int> travelTimes;
             vector<int> stopoverTimes;
-            pair<Date, Date> saleDate;
+            SaleDate saleDate;
             MyChar<2> type;
 
             while (command.current < command.count) {

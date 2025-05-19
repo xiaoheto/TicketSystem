@@ -1,136 +1,96 @@
-//
-// Created by 43741 on 2025/5/17.
-//
+// Time.hpp
+#ifndef TIME_HPP
+#define TIME_HPP
 
-#ifndef TIME_H
-#define TIME_H
 #include <string>
+#include<iostream>
 #include <cstring>
+#include "../STLite/utility.h"
+
+using sjtu::pair;
 using std::string;
 using std::ostream;
 
-int Month[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+extern int Month[13]; // 只声明，定义放在 Time.cpp 中
+
+class Date;
 
 class Clock {
     int hour;
     int minute;
 
+    friend pair<Date, Clock> intToReadTime(Date day, Clock clock, int time);
+
 public:
     Clock() = default;
 
-    Clock(int h, int m): hour(h), minute(m) {
-    }
+    Clock(int h, int m);
 
-    Clock(const string &input) {
-        hour = std::stoi(input.substr(0, 2));
-        minute = std::stoi(input.substr(3, 2));
-    }
+    Clock(const string &input);
 
     Clock(const Clock &other) = default;
 
-    static bool checkClockValid(int h, int m) {
-        return (h >= 0 && h < 24) && (m >= 0 && m < 60);
-    }
+    static bool checkClockValid(int h, int m);
 
-    Clock &operator=(const Clock &other) {
-        if (this != &other) {
-            hour = other.hour;
-            minute = other.minute;
-        }
-        return *this;
-    }
+    Clock &operator=(const Clock &other);
 
-    bool operator==(const Clock &other) const {
-        return hour == other.hour && minute == other.minute;
-    }
+    bool operator==(const Clock &other) const;
 
-    bool operator<(const Clock &other) const {
-        if (hour != other.hour) {
-            return hour < other.hour;
-        }
-        return minute < other.minute;
-    }
+    bool operator<(const Clock &other) const;
 
-    static string int_to_clock(int n) {
-        if (n < 10) {
-            return "0" + std::to_string(n);
-        }
-        return std::to_string(n);
-    }
+    static string int_to_clock(int n);
 
-    friend ostream &operator<<(ostream &out, const Clock &obj) {
-        out << int_to_clock(obj.hour) << ':' << int_to_clock(obj.minute);
-        return out;
-    }
+    friend ostream &operator<<(ostream &out, const Clock &obj);
 };
 
 class Date {
     int month;
     int day;
 
+    friend class SaleDate;
+
+    friend pair<Date, Clock> intToReadTime(Date day, Clock clock, int time);
+
 public:
     Date() = default;
 
-    Date(int m, int d): month(m), day(d) {
-    }
+    Date(int m, int d);
 
-    Date(const string &input) {
-        month = std::stoi(input.substr(0, 2));
-        day = std::stoi(input.substr(3, 2));
-    }
+    Date(const string &input);
 
     Date(const Date &other) = default;
 
-    Date &operator=(const Date &other) {
-        if (this != &other) {
-            month = other.month;
-            day = other.day;
-        }
-        return *this;
-    }
+    Date &operator=(const Date &other);
 
-    bool CheckDateValid(int m, int d) const {
-        if (m <= 0 || m > 12 || d <= 0 || d > Month[m]) {
-            return false;
-        }
-        return true;
-    }
+    bool CheckDateValid(int m, int d) const;
 
-    bool operator==(const Date &other) const {
-        return month == other.month && day == other.day;
-    }
+    bool operator==(const Date &other) const;
 
-    bool operator<(const Date &other) const {
-        if (month != other.month) {
-            return month < other.month;
-        }
-        return day < other.day;
-    }
+    bool operator<(const Date &other) const;
 
-    int operator-(const Date &other) const {
-        if (month == other.month) {
-            return day - other.day;
-        }
-        int ans = 0;
-        for (int i = other.month + 1; i < month; ++i) {
-            ans += Month[i];
-        }
+    int operator-(const Date &other) const;
 
-        ans += Month[other.month] - other.day;
-        ans += day;
-        return ans;
-    }
+    static string int_to_date(int n);
 
-    static string int_to_date(int n) {
-        if (n < 10) {
-            return "0" + std::to_string(n);
-        }
-        return std::to_string(n);
-    }
-
-    friend ostream &operator<<(ostream &out, const Date &obj) {
-        out << int_to_date(obj.month) << '-' << int_to_date(obj.day);
-        return out;
-    }
+    friend ostream &operator<<(ostream &out, const Date &obj);
 };
-#endif //TIME_H
+
+class SaleDate {
+    Date startDate;
+    Date endDate;
+
+public:
+    SaleDate() = default;
+
+    SaleDate(const Date &st, const Date &en);
+
+    SaleDate(const SaleDate &other);
+
+    SaleDate &operator=(const SaleDate &other);
+
+    bool operator==(const SaleDate &other) const;
+
+    bool CheckDayInSale(const Date &day) const;
+};
+
+#endif // TIME_HPP

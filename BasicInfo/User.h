@@ -4,9 +4,9 @@
 
 #ifndef USER_H
 #define USER_H
+#include <string>
 #include <iostream>
 #include "../Tool/MyChar.h"
-#include "../Management/UserManagement.h"
 using std::ostream;
 
 class User {

@@ -3,16 +3,16 @@
 #include <cstring>
 #include <iomanip>
 
-#include "../Management/UserManagement.h"
 using std::string;
 using std::strcpy;
 using std::istream;
 using std::ostream;
 
+class UserManagement; //防止循环包含
 template<int length>
 class MyChar {
     char myChar[length];
-    friend UserManagement;
+    friend class UserManagement;
 
 public:
     MyChar() : myChar("") {
