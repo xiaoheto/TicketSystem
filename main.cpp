@@ -361,6 +361,7 @@ int main() {
         } else if (command.cmd == "clean") {
             //TODO:清除所有数据
         } else if (command.cmd == "exit") {
+            cout << "bye" << '\n';
             //TODO:下线所有用户
             break;
         } else {
