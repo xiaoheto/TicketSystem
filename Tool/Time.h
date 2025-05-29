@@ -1,96 +1,159 @@
-// Time.hpp
-#ifndef TIME_HPP
-#define TIME_HPP
+#include "Time.h"
 
-#include <string>
-#include<iostream>
-#include <cstring>
-#include "../STLite/utility.h"
+#include <iomanip>
 
-using sjtu::pair;
-using std::string;
-using std::ostream;
+int Month[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-extern int Month[13]; // 只声明，定义放在 Time.cpp 中
+// ===== Clock 类实现 =====
+Clock::Clock(int h, int m) : hour(h), minute(m) {}
 
-class Date;
+Clock::Clock(const string &input) {
+    hour = std::stoi(input.substr(0, 2));
+    minute = std::stoi(input.substr(3, 2));
+}
 
-class Clock {
-    int hour;
-    int minute;
+bool Clock::checkClockValid(int h, int m) {
+    return (h >= 0 && h < 24) && (m >= 0 && m < 60);
+}
 
-    friend pair<Date, Clock> intToReadTime(Date day, Clock clock, int time);
+Clock &Clock::operator=(const Clock &other) {
+    if (this != &other) {
+        hour = other.hour;
+        minute = other.minute;
+    }
+    return *this;
+}
 
-public:
-    Clock() = default;
+bool Clock::operator==(const Clock &other) const {
+    return hour == other.hour && minute == other.minute;
+}
 
-    Clock(int h, int m);
+bool Clock::operator<(const Clock &other) const {
+    if (hour != other.hour) return hour < other.hour;
+    return minute < other.minute;
+}
 
-    Clock(const string &input);
+bool Clock::operator>=(const Clock &other) const {
+    return !(*this < other);
+}
 
-    Clock(const Clock &other) = default;
 
-    static bool checkClockValid(int h, int m);
+string Clock::int_to_clock(int n) {
+    if (n < 10) return "0" + std::to_string(n);
+    return std::to_string(n);
+}
 
-    Clock &operator=(const Clock &other);
+ostream &operator<<(ostream &out, const Clock &obj) {
+    out << Clock::int_to_clock(obj.hour) << ':' << Clock::int_to_clock(obj.minute);
+    return out;
+}
 
-    bool operator==(const Clock &other) const;
+// ===== Date 类实现 =====
+Date::Date(int m, int d) : month(m), day(d) {}
 
-    bool operator<(const Clock &other) const;
+Date::Date(const string &input) {
+    month = std::stoi(input.substr(0, 2));
+    day = std::stoi(input.substr(3, 2));
+}
 
-    static string int_to_clock(int n);
+Date &Date::operator=(const Date &other) {
+    if (this != &other) {
+        month = other.month;
+        day = other.day;
+    }
+    return *this;
+}
 
-    friend ostream &operator<<(ostream &out, const Clock &obj);
-};
+bool Date::CheckDateValid(int m, int d) const {
+    return !(m <= 0 || m > 12 || d <= 0 || d > Month[m]);
+}
 
-class Date {
-    int month;
-    int day;
+bool Date::operator==(const Date &other) const {
+    return month == other.month && day == other.day;
+}
 
-    friend class SaleDate;
+bool Date::operator!=(const Date &other) const {
+    return !(*this == other);
+}
 
-    friend pair<Date, Clock> intToReadTime(Date day, Clock clock, int time);
 
-public:
-    Date() = default;
+bool Date::operator<(const Date &other) const {
+    if (month != other.month) return month < other.month;
+    return day < other.day;
+}
 
-    Date(int m, int d);
+bool Date::operator<=(const Date &other) const {
+    return  (*this < other) || (*this == other);
+}
 
-    Date(const string &input);
+bool Date::operator>=(const Date &other) const {
+    return !(*this < other);
+}
 
-    Date(const Date &other) = default;
+int Date::operator-(const Date &other) const {
+    if (month == other.month) return day - other.day;
 
-    Date &operator=(const Date &other);
+    int ans = 0;
+    for (int i = other.month + 1; i < month; ++i) {
+        ans += Month[i];
+    }
+    ans += Month[other.month] - other.day;
+    ans += day;
+    return ans;
+}
 
-    bool CheckDateValid(int m, int d) const;
+string Date::int_to_date(int n) {
+    if (n < 10) return "0" + std::to_string(n);
+    return std::to_string(n);
+}
 
-    bool operator==(const Date &other) const;
+int Clock::operator-(const Clock &other) const {
+    return (hour - other.hour) * 60 + minute - other.minute;
+}
 
-    bool operator<(const Date &other) const;
 
-    int operator-(const Date &other) const;
+Date &Date::operator++() {
+    if (day == Month[month]) {
+        day = 1;
+        month++;
+    }
+    else day++;
+    return *this;
+}
 
-    static string int_to_date(int n);
 
-    friend ostream &operator<<(ostream &out, const Date &obj);
-};
+Date Date::operator++(int n) {
+    Date temp = *this;
+    ++(*this);
+    return temp;
+}
 
-class SaleDate {
-    Date startDate;
-    Date endDate;
+ostream &operator<<(ostream &out, const Date &obj) {
+    out << Date::int_to_date(obj.month) << '-' << Date::int_to_date(obj.day);
+    return out;
+}
 
-public:
-    SaleDate() = default;
+// ===== SaleDate 类实现 =====
+SaleDate::SaleDate(const Date &st, const Date &en) : startDate(st), endDate(en) {}
 
-    SaleDate(const Date &st, const Date &en);
+SaleDate::SaleDate(const SaleDate &other) : startDate(other.startDate), endDate(other.endDate) {}
 
-    SaleDate(const SaleDate &other);
+SaleDate &SaleDate::operator=(const SaleDate &other) {
+    if (this != &other) {
+        startDate = other.startDate;
+        endDate = other.endDate;
+    }
+    return *this;
+}
 
-    SaleDate &operator=(const SaleDate &other);
+bool SaleDate::operator==(const SaleDate &other) const {
+    return startDate == other.startDate && endDate == other.endDate;
+}
 
-    bool operator==(const SaleDate &other) const;
-
-    bool CheckDayInSale(const Date &day) const;
-};
-
-#endif // TIME_HPP
+bool SaleDate::CheckDayInSale(const Date &day) const {
+    if (day.month < startDate.month || day.month > endDate.month) return false;
+    if ((day.month == startDate.month && day.day < startDate.day) ||
+        (day.month == endDate.month && day.day > endDate.day)) return false;
+    if (day.day <= 0 || day.day > Month[day.month]) return false;
+    return true;
+}
