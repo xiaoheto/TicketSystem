@@ -4,8 +4,8 @@
 
 #include "UserManagement.h"
 
-UserManagement::UserManagement(): user_data("user.txt") {
-    user_index.initialise("user_info");
+UserManagement::UserManagement(): user_data("user.data") {
+    user_index.initialise("user.index");
     user_index.get_info(size, 1);
 }
 
@@ -120,5 +120,18 @@ std::pair<User, bool> UserManagement::modify_profile(const MyChar<24> &cur_usern
 }
 
 void UserManagement::clean_user_file() {
-    std::move("user.txt");
+    std::ofstream ofs_data("user.data", std::ios::trunc | std::ios::binary);
+    ofs_data.close();
+
+    std::ofstream ofs_index("user.index", std::ios::trunc | std::ios::binary);
+    int tmp = -1, tmp2 = 0;
+    ofs_index.write(reinterpret_cast<char *>(&tmp), sizeof(int)); // root = -1
+    for (int i = 1; i < 2; ++i) {
+        ofs_index.write(reinterpret_cast<char *>(&tmp2), sizeof(int)); // size = 0
+    }
+    ofs_index.close();
+}
+
+void UserManagement::end() {
+    LoginInStack.clear();
 }
