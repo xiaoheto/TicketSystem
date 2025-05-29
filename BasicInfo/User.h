@@ -9,6 +9,7 @@
 #include "../Tool/MyChar.h"
 using std::ostream;
 
+class TicketManagement;
 class User {
     MyChar<24> username;
     MyChar<32> password;
@@ -17,6 +18,7 @@ class User {
     int privilege = -1;
 
     friend class UserManagement;
+    friend class TicketManagement;
 public:
     User() = default;
 
