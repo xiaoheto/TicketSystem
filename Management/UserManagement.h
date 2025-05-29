@@ -10,12 +10,14 @@
 #include "../STLite/map.h"
 using sjtu::map;
 
+class TicketManagement;
 class UserManagement {
     BPTree<MyChar<24>, int> user_data;
     MemoryRiver<User> user_index;
     int size = 0;
     map<MyChar<24>, int> LoginInStack;
 
+    friend class TicketManagement;
 public:
     bool flag = false; // 是否已经添加过用户
 
@@ -40,5 +42,7 @@ public:
                                          const MyChar<24> &name, const MyChar<32> &mailAddr, int privilege);
 
     static void clean_user_file();
+
+    void end();
 };
 #endif //USERMANAGEMENT_H
