@@ -6,9 +6,12 @@
 #include "exceptions.h"
 
 namespace sjtu {
+    class TrainManagement;
     template<typename T, class Compare = std::less<T>>
     class priority_queue {
     private:
+
+        friend class TrainManagement;
         struct Node {
             Node *left;
             Node *right;

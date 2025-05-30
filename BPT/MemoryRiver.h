@@ -10,12 +10,16 @@ using std::fstream;
 using std::string;
 using std::ios;
 
+class UserManagement;
+class TrainManagement;
 template<typename T, int info_len = 2>
 class MemoryRiver {
     fstream file;
     string filename;
     int sizeofT = sizeof(T);
 
+    friend class UserManagement;
+    friend class TrainManagement;
 public:
     MemoryRiver() = default;
 

@@ -1,21 +1,20 @@
 #include <string>
 #include <sstream>
-#include <string>
 #include <fstream>
 #include <random>
 #include <iostream>
 #include "BPT/BPlusTree.h"
 #include "Management/TrainManagement.h"
+#include "Management/UserManagement.h"
+#include "Management/TicketManagement.h"
 #include "Tool/CommandParser.h"
 #include "Tool/MyChar.h"
 #include "Tool/Time.h"
-#include "Management/UserManagement.h"
 
 using std::string;
 using std::fstream;
 using std::ifstream;
 using std::ofstream;
-using sjtu::pair;
 using std::string;
 using std::ios;
 using std::string;
@@ -25,6 +24,7 @@ using std::ofstream;
 using std::cin;
 using std::cout;
 using std::getline;
+using std::pair;
 
 vector<string> getStr(const string &input) {
     vector<string> res;
@@ -76,6 +76,7 @@ int main() {
 
     UserManagement user_management;
     TrainManagement train_management;
+    TicketManagement ticket_management;
     string input;
     while (getline(cin, input)) {
         Command command(input);
@@ -347,15 +348,17 @@ int main() {
                 }
                 command.current += 2;
             }
+            cout << command.timeStamp << ' ';
             if (q == "true") {
-                //TODO
+                ticket_management.buy_ticket(username,trainID,d,st,en,n,true,user_management,train_management);
             } else if (q == "false") {
-                //TODO
+                ticket_management.buy_ticket(username,trainID,d,st,en,n,false,user_management,train_management);
             }
         } else if (command.cmd == "query_order") {
             string u = command.getNext();
             MyChar<24> username = command.getNext();
-            //TODO
+            cout << command.timeStamp << ' ';
+            ticket_management.query_order(username,user_management,train_management);
         } else if (command.cmd == "refund_ticket") {
             MyChar<24> username;
             int n;
@@ -368,18 +371,18 @@ int main() {
                 }
                 command.current += 2;
             }
-            //TODO
+            cout << command.timeStamp << ' ';
+            ticket_management.refund_ticket(username,user_management,train_management,n);
         } else if (command.cmd == "clean") {
             user_management.clean_user_file();
             cout << 0 << '\n';
-            //TODO:清除所有数据
+            user_management.clean_user_file();
+            train_management.clear_train_file();
+            ticket_management.clear_ticket_file();
         } else if (command.cmd == "exit") {
-<<<<<<< HEAD
-=======
             user_management.end();
->>>>>>> 828068a (basic structure)
             cout << "bye" << '\n';
-            //TODO:下线所有用户
+            user_management.LoginInStack.clear();
             break;
         } else {
             throw Error("Invalid\n");

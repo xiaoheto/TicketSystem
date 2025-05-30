@@ -4,12 +4,19 @@
 
 #include "TicketManagement.h"
 
-TicketManagement::TicketManagement(): ticket_data("order_date"), waiting_data("waiting_data") {
+TicketManagement::TicketManagement(): ticket_data("ticket.date"), waiting_data("waiting.data") {
+    ticket_index.initialise("ticket.index");
+    ticket_index.get_info(total,1);
 }
+
+TicketManagement::~TicketManagement() {
+    ticket_index.write_info(total,1);
+}
+
 
 void TicketManagement::buy_ticket(const MyChar<24> &username, const MyChar<24> &trainID, const Date &d,
                                   const MyChar<24> &start_station, const MyChar<24> &end_station, int n, bool q,
-                                  UserManagement user, TrainManagement train) {
+                                  UserManagement &user, TrainManagement &train) {
     auto it = user.LoginInStack.find(username);
     if (it == user.LoginInStack.end()) {
         cout << -1 << '\n';
@@ -65,13 +72,14 @@ void TicketManagement::buy_ticket(const MyChar<24> &username, const MyChar<24> &
 
     sale_seat += min;
 
-    if (sale_seat >= n) {
+    if (sale_seat >= n) { // 能够成功购票
         seat.seat[start_index] -= n;
         seat.seat[end_index] += n;
+        int index = ticket_index.get_index();
         Ticket ticket(cur_user.username, cur_train.trainID, start_index, end_index, d, success,
-                      cur_train.stations[end_index].arriveTime - cur_train.stations[start_index].leaveTime,n);
-        int index = ticket_index.write(ticket);
+                      cur_train.stations[end_index].arriveTime - cur_train.stations[start_index].leaveTime,n,index);
         ticket_data.insert(cur_user.username, index);
+        ticket_index.update(ticket,index);
         int pri = n * (cur_train.stations[end_index].price - cur_train.stations[start_index].price);
 
         train.seat_index.update(seat, 100 * cur_train.index + d_day);
@@ -82,10 +90,10 @@ void TicketManagement::buy_ticket(const MyChar<24> &username, const MyChar<24> &
     if (!q) {
         cout << -1 << '\n';
         return;
-    }
+    } //不接受候补
+    int index = ticket_index.get_index();
     Ticket ticket(cur_user.username, cur_train.trainID, start_index, end_index, d, pending,
-                  cur_train.stations[end_index].arriveTime - cur_train.stations[start_index].price,n);
-    int index = ticket_index.write(ticket);
+                  cur_train.stations[end_index].arriveTime - cur_train.stations[start_index].price,n,index);
     ticket_data.insert(cur_user.username, index);
     TrainTicketInfo info(cur_train.trainID, ini_day);
 
@@ -93,85 +101,96 @@ void TicketManagement::buy_ticket(const MyChar<24> &username, const MyChar<24> &
     cout << "queue" << '\n';
 }
 
-void TicketManagement::query_order(const MyChar<24> &username, UserManagement user, TrainManagement train) {
+void TicketManagement::query_order(const MyChar<24> &username, UserManagement &user, TrainManagement &train) {
+    auto it = user.LoginInStack.find(username);
+    if (it == user.LoginInStack.end()) {
+        cout << -1 << '\n';
+        return;
+    }
+
+    vector<int> user_res = user.user_data.query(username);
+    User cur_user;
+    user.user_index.read(cur_user,user_res[0]);
+
+    vector<int> ticket_res = ticket_data.query(username);
+    cout << ticket_res.size() << '\n';
+    for(int i = ticket_res.size() - 1;i >= 0;--i) {
+        Ticket cur_ticket;
+        ticket_index.read(cur_ticket,ticket_res[i]);
+        cout << '[' << cur_ticket.state << ']' << ' ';
+        vector<TrainInfo> train_res = train.train_data.query(cur_ticket.trainID);
+
+        Train cur_train;
+        train.train_index.read(cur_train,train_res[0].index);
+
+        Station start_station = cur_train.stations[cur_ticket.start_];
+        Station end_station = cur_train.stations[cur_ticket.end_];
+
+        Date ini_day = Date::find_ini_day(cur_ticket.day,cur_train.startTime,start_station.arriveTime);
+        pair <Date,Clock>start_time = intToReadTime(ini_day,cur_train.startTime,start_station.leaveTime);
+        pair <Date,Clock>end_time = intToReadTime(ini_day,cur_train.startTime,end_station.arriveTime);
+        cout << cur_train.trainID << ' ' << start_station.stationName << ' ' << start_time.first << ' ' << start_time.second << " -> " << end_station.stationName << ' ' << end_time.first << ' ' << end_time.second << end_station.price - start_station.price << ' ' << cur_ticket.num << '\n';
+    }
 }
 
-int TicketManagement::refund_ticket(const MyChar<24> &username, UserManagement user,TrainManagement train, int n) {
+int TicketManagement::refund_ticket(const MyChar<24> &username, UserManagement &user,TrainManagement &train, int n) {
     auto it = user.LoginInStack.find(username);
     if (it == user.LoginInStack.end()) {
         return -1;
     }
 
-    User cur_user;
-    vector<int>user_res = user.user_data.query(username);
-
-    user.user_index.read(cur_user,user_res[0]);
-    vector<int> order = ticket_data.query(username);
-
-    if (n > order.size()) {
-        return -1;
-    }
-
-    Ticket ticket = ticket_index.read(order[n - 1]);
-    vector<TrainInfo> train_res = train.train_data.query(ticket.trainID);
-    if (train_res.empty()) {
-        return -1;
-    }
-
+    vector<int> order_res = ticket_data.query(username);
+    Ticket cur_ticket;
+    ticket_index.read(cur_ticket,order_res[order_res.size() - n]);
+    vector<TrainInfo> train_res = train.train_data.query(cur_ticket.trainID);
     Train cur_train;
+    int st_ = cur_ticket.start_;
+    int en_ = cur_ticket.end_;
     train.train_index.read(cur_train,train_res[0].index);
 
-    Date ini_day = Date::find_ini_day(ticket.day,cur_train.startTime,cur_train.stations[ticket.start_].arriveTime);
-    int d_day = Date::now_to_start(ini_day,cur_train.salesDate.startDate);
-
-    Seat seat;
-    train.seat_index.read(seat,100 * cur_train.index + d_day);
-
-    if (ticket.state == pending) {
-        waiting_data.erase({cur_train.trainID,ini_day},ticket);
+    if (cur_ticket.state == pending) {
+        waiting_data.erase({cur_ticket.trainID,cur_ticket.day},cur_ticket);
     }
+    else if (cur_ticket.state == success) {
+        vector<Ticket> wait_line = waiting_data.query({cur_ticket.trainID,cur_ticket.day});
+        Seat seat;
+        train.seat_index.read(seat,100 * cur_ticket.index + (cur_ticket.day - cur_train.salesDate.startDate));
+        seat.seat[st_] += n;
+        seat.seat[en_] -= n;
+        for(int i = 0;i < wait_line.size();++i) {
+            Ticket wait_ticket = wait_line[i];
+            int wait_st = wait_ticket.start_;
+            int wait_en = wait_ticket.end_;
 
-    if (ticket.state == success) {
-        //TODO:把候补票转化为正式票，更新座位
-        seat.seat[ticket.start_] += n;
-        seat.seat[ticket.end_] -= n;
-
-        vector<Ticket> waiting_ticket = waiting_data.query({cur_train.trainID,ini_day});
-        for(int i = 0;i < waiting_ticket.size();++i) {
-            Ticket cur_process_ticket = waiting_ticket[i];
-            if (cur_process_ticket.day != ini_day) {
-                continue;
+            int cur_seat = TrainManagement::cal_seat(wait_st,wait_en,seat,cur_train.seatNum);
+            if (cur_seat > wait_ticket.num) {
+                seat.seat[wait_st] -= wait_ticket.num;
+                seat.seat[wait_en] += wait_ticket.num;
+                wait_ticket.state = success;
+                waiting_data.erase({wait_ticket.trainID,wait_ticket.day},wait_ticket);
+                ticket_index.update(wait_ticket,wait_ticket.index);
             }
-
-            int st_ = cur_process_ticket.start_;
-            int en_ = cur_process_ticket.end_;
-
-            vector<TrainInfo> cur_process_info = train.train_data.query(cur_process_ticket.trainID);
-            Train cur_process_train;
-            train.train_index.read(cur_process_train,cur_process_info[0].index);
-            int cur_seat_ = cur_process_train.seatNum;
-            for(int j = 0;j < st_;++j) {
-                cur_seat_ += seat.seat[i];
-            }
-
-            int min = 1e5;
-            for(int k = st_;k < en_;++k) {
-                min = std::min(min,seat.seat[k]);
-            }
-
-            cur_seat_ += min;
-
-            if (cur_seat_ >= cur_process_ticket.num) { // 能够成功购票
-                seat.seat[st_] -= cur_process_ticket.num;
-                seat.seat[en_] += cur_process_ticket.num;
-                train.seat_index.update(seat,100 * cur_process_train.index + d_day);
-
-                waiting_data.erase({cur_process_train.trainID,ini_day},cur_process_ticket);
-
-                cur_process_ticket.state = success;
-                //TODO:更新order的内容
-            }
+            train.seat_index.update(seat,100 * cur_train.index + (cur_ticket.day - cur_train.salesDate.startDate));
         }
+
+        cur_ticket.state = refunded;
+        ticket_index.update(cur_ticket,cur_ticket.index);
+        train.seat_index.update(seat,100 * cur_train.index + (cur_ticket.day - cur_train.salesDate.startDate));
+        train.train_index.update(cur_train,cur_train.index);
     }
-    ticket.state = refunded;
+    return 0;
+}
+
+void TicketManagement::clear_ticket_file() {
+    std::ofstream ticket_data("ticket.data",std::ios::trunc | std::ios::binary);
+    ticket_data.close();
+
+    std::ofstream waiting_data("waiting.data",ios::trunc | ios::binary);
+    waiting_data.close();
+
+    std::ofstream ticket_index("ticket.index");
+    int tmp1 = -1,tmp2 = 0;
+    ticket_index.write(reinterpret_cast<char *>(&tmp1),sizeof(int));
+    ticket_index.write(reinterpret_cast<char *>(&tmp2),sizeof(int));
+    ticket_index.close();
 }

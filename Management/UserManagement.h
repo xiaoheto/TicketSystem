@@ -15,10 +15,11 @@ class UserManagement {
     BPTree<MyChar<24>, int> user_data;
     MemoryRiver<User> user_index;
     int size = 0;
-    map<MyChar<24>, int> LoginInStack;
 
     friend class TicketManagement;
 public:
+    map<MyChar<24>, int> LoginInStack;
+
     bool flag = false; // 是否已经添加过用户
 
     UserManagement();

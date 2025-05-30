@@ -5,14 +5,12 @@
 #ifndef TRAIN_H
 #define TRAIN_H
 #include <valarray>
-
-#include "../Tool/MyChar.h"
 #include "../Tool/Time.h"
-#include "../STLite/utility.h"
+#include "../Tool/MyChar.h"
 
-using sjtu::pair;
+using std::pair;
 
-inline pair<Date, Clock> intToReadTime(Date day, Clock clock, int time) {
+inline std::pair<Date, Clock> intToReadTime(Date day, Clock clock, int time) {
     clock.minute += time;
     if (clock.minute >= 60) {
         clock.hour += clock.minute / 60;
@@ -26,7 +24,7 @@ inline pair<Date, Clock> intToReadTime(Date day, Clock clock, int time) {
         day.day -= Month[day.month];
         day.month += 1;
     }
-    return {day, clock};
+    return std::make_pair(day, clock);
 }
 
 class TrainManagement;
@@ -172,6 +170,10 @@ public:
         return *this;
     }
 
+    bool operator>(const TrainInfo &other) const {
+        return index > other.index;
+    }
+
     bool operator==(const TrainInfo &other) const {
         return index == other.index;
     }
@@ -200,6 +202,10 @@ public:
         trainID(trainID), stationNum(staNum), price(pri), arr_time(arr), lea_time(lea) {
     }
 
+    bool operator==(const TrainStation &other) const {
+        return trainID == other.trainID && stationNum == other.stationNum;
+    }
+
     TrainStation(const TrainStation &other) = default;
 
     TrainStation &operator=(const TrainStation &other) {
@@ -212,6 +218,13 @@ public:
             lea_time = other.lea_time;
         }
         return *this;
+    }
+
+    bool operator>(const TrainStation &other) const {
+        if (trainID != other.trainID) {
+            return trainID > other.trainID;
+        }
+        return stationNum > other.stationNum;
     }
 };
 
@@ -252,6 +265,7 @@ public:
 };
 
 class CompareCost {
+public:
     bool operator()(const CompareInfo &a, const CompareInfo &b) const {
         if (a.price != b.price) {
             return a.price < b.price;
@@ -261,6 +275,7 @@ class CompareCost {
 };
 
 class CompareTime {
+public:
     bool operator()(const CompareInfo &a, const CompareInfo &b) const {
         if (a.time != b.time) {
             return a.time < b.time;
@@ -283,6 +298,20 @@ class CompareTrans {
     friend class TrainManagement;
 public:
     CompareTrans() = default;
+
+    CompareTrans &operator=(const CompareTrans &other) {
+        if (this != &other) {
+            a = other.a;
+            b = other.b;
+            start_leave = other.start_leave;
+            end_arrive = other.end_arrive;
+            trans_leave = other.trans_leave;
+            trans_arrive = other.trans_arrive;
+            time = other.time;
+            cost = other.cost;
+        }
+        return *this;
+    }
 
     CompareTrans(const CompareInfo &a,const CompareInfo &b,const pair <Date,Clock> &lea_start,
         const pair <Date,Clock> &arr_mid,const pair <Date,Clock> &lea_mid,const pair <Date,Clock> &arr_end,int time,int price):start_leave(lea_start),trans_arrive(arr_mid),trans_leave(lea_mid),end_arrive(arr_end),time(time),cost(price) {

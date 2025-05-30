@@ -1,5 +1,7 @@
 #include "Time.h"
 
+#include <iomanip>
+
 int Month[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 // ===== Clock 类实现 =====
@@ -30,6 +32,16 @@ bool Clock::operator<(const Clock &other) const {
     if (hour != other.hour) return hour < other.hour;
     return minute < other.minute;
 }
+
+bool Clock::operator>=(const Clock &other) const {
+    return !(*this < other);
+}
+
+bool Clock::operator>(const Clock &other) const {
+    return (!(*this < other) && !(*this == other));
+}
+
+
 
 string Clock::int_to_clock(int n) {
     if (n < 10) return "0" + std::to_string(n);
@@ -65,10 +77,28 @@ bool Date::operator==(const Date &other) const {
     return month == other.month && day == other.day;
 }
 
+bool Date::operator!=(const Date &other) const {
+    return !(*this == other);
+}
+
+
 bool Date::operator<(const Date &other) const {
     if (month != other.month) return month < other.month;
     return day < other.day;
 }
+
+bool Date::operator<=(const Date &other) const {
+    return  (*this < other) || (*this == other);
+}
+
+bool Date::operator>=(const Date &other) const {
+    return !(*this < other);
+}
+
+bool Date::operator>(const Date &other) const {
+    return  !(*this <= other);
+}
+
 
 int Date::operator-(const Date &other) const {
     if (month == other.month) return day - other.day;
@@ -85,6 +115,27 @@ int Date::operator-(const Date &other) const {
 string Date::int_to_date(int n) {
     if (n < 10) return "0" + std::to_string(n);
     return std::to_string(n);
+}
+
+int Clock::operator-(const Clock &other) const {
+    return (hour - other.hour) * 60 + minute - other.minute;
+}
+
+
+Date &Date::operator++() {
+    if (day == Month[month]) {
+        day = 1;
+        month++;
+    }
+    else day++;
+    return *this;
+}
+
+
+Date Date::operator++(int n) {
+    Date temp = *this;
+    ++(*this);
+    return temp;
 }
 
 ostream &operator<<(ostream &out, const Date &obj) {

@@ -11,12 +11,11 @@ using std::cout;
 #include "../BPT/MemoryRiver.h"
 #include "../STLite/vector.h"
 #include "../Tool/Time.h"
-#include "../STLite/utility.h"
 #include "../STLite/priority_queue.h"
 
-using sjtu::pair;
 using sjtu::vector;
 using sjtu::priority_queue;
+using std::pair;
 
 class TicketManagement;
 class TrainManagement {
@@ -30,6 +29,8 @@ class TrainManagement {
     friend class TicketManagement;
 public:
     TrainManagement();
+
+    ~TrainManagement();
 
     int add_train(const MyChar<24> &trainID, int stationNum, int seatNum, vector<string> stationNames,
                   const vector<int> &prices, Clock startTime, vector<int> travelTimes, vector<int> stopoverTimes,
@@ -48,5 +49,9 @@ public:
     void query_transfer_time(Date day, const MyChar<24> &s, const MyChar<24> &t);
 
     void query_transfer_cost(Date day, const MyChar<24> &s, const MyChar<24> &t);
+
+    static int cal_seat(int start_,int end_,Seat seat,int max_seat);
+
+    void clear_train_file();
 };
 #endif //TRAINMANAGEMENT_H
