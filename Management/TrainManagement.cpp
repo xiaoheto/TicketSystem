@@ -12,7 +12,7 @@ TrainManagement::TrainManagement(): train_data("train.data"), station_data("stat
 }
 
 TrainManagement::~TrainManagement() {
-    train_index.write_info(total,1);
+    train_index.write_info(total, 1);
 }
 
 
@@ -92,10 +92,12 @@ int TrainManagement::release_train(const MyChar<24> &trainID) {
 void TrainManagement::query_train(const MyChar<24> &trainID, Date date) {
     vector<TrainInfo> res = train_data.query(trainID);
     Train train;
-    train_index.read(train, res[0].index);
     if (res.empty()) {
         cout << -1 << '\n';
+        return;
     }
+
+    train_index.read(train, res[0].index);
 
     int now_time = Date::now_to_start(res[0].date.startDate, date);
     Seat seat;
@@ -332,8 +334,7 @@ void TrainManagement::query_transfer_cost(Date day, const MyChar<24> &s, const M
 
                             if (is_first) {
                                 final_ans = temp_ans;
-                            }
-                            else {
+                            } else {
                                 if (!final_ans.compareCost(temp_ans)) {
                                     final_ans = temp_ans;
                                 }
@@ -363,9 +364,9 @@ void TrainManagement::query_transfer_cost(Date day, const MyChar<24> &s, const M
     int seat_num2 = cal_seat(final_ans.b.start_, final_ans.b.end_, seat2, b_.seatNum);
 
     cout << a_.trainID << ' ' << a_.stations[final_ans.a.start_].stationName << ' ' << final_ans.start_leave.first <<
-        ' ' << final_ans.start_leave.second << " -> " << a_.stations[final_ans.a.end_].stationName << ' ' <<
-        final_ans.trans_arrive.first << ' ' << final_ans.trans_arrive.second << ' ' << final_ans.a.price << ' ' <<
-        seat_num1 << '\n';
+            ' ' << final_ans.start_leave.second << " -> " << a_.stations[final_ans.a.end_].stationName << ' ' <<
+            final_ans.trans_arrive.first << ' ' << final_ans.trans_arrive.second << ' ' << final_ans.a.price << ' ' <<
+            seat_num1 << '\n';
     cout << b_.trainID << ' ' << b_.stations[final_ans.b.start_].stationName << ' ' << final_ans.trans_leave.first <<
             ' ' << final_ans.trans_leave.second << " -> " << b_.stations[final_ans.b.start_].stationName << ' ' <<
             final_ans.end_arrive.first << ' ' << final_ans.end_arrive.second << ' ' << final_ans.b.price << ' ' <<
@@ -515,18 +516,17 @@ void TrainManagement::clear_train_file() {
     std::ofstream train_data("train.data", std::ios::trunc | std::ios::binary);
     train_data.close();
 
-    std::ofstream station_data("station.data",std::ios::trunc | std::ios::binary);
+    std::ofstream station_data("station.data", std::ios::trunc | std::ios::binary);
     station_data.close();
 
-    std::ofstream train_index("train.index",std::ios::trunc | std::ios::binary);
-    int tmp1 = -1,tmp2 = 0;
-    train_index.write(reinterpret_cast<char *> (&tmp1),sizeof(int));
-    train_index.write(reinterpret_cast<char *> (&tmp2),sizeof(int));
+    std::ofstream train_index("train.index", std::ios::trunc | std::ios::binary);
+    int tmp1 = -1, tmp2 = 0;
+    train_index.write(reinterpret_cast<char *>(&tmp1), sizeof(int));
+    train_index.write(reinterpret_cast<char *>(&tmp2), sizeof(int));
     train_index.close();
 
-    std::ofstream seat_index("seat.index",std::ios::trunc | std::ios::binary);
+    std::ofstream seat_index("seat.index", std::ios::trunc | std::ios::binary);
     seat_index.close();
 
     delete_index.clear();
 }
-

@@ -4,6 +4,7 @@
 
 #ifndef USERMANAGEMENT_H
 #define USERMANAGEMENT_H
+#include <filesystem>
 #include "../BPT/MemoryRiver.h"
 #include "../BPT/BPlusTree.h"
 #include "../BasicInfo/User.h"
@@ -42,8 +43,6 @@ public:
                                          const MyChar<32> &password,
                                          const MyChar<24> &name, const MyChar<32> &mailAddr, int privilege);
 
-    static void clean_user_file();
-
-    void end();
+    void clean_user_file();
 };
 #endif //USERMANAGEMENT_H

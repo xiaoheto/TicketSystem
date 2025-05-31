@@ -17,7 +17,7 @@ class TicketManagement {
     BPTree<MyChar<24>, int> ticket_data; //username -> index
     MemoryRiver<Ticket> ticket_index;
     BPTree<TrainTicketInfo, Ticket> waiting_data;
-    int total;
+    int total = 0;
 
 public:
     TicketManagement();

@@ -13,17 +13,15 @@ UserManagement::~UserManagement() {
     user_index.write_info(size, 1);
 }
 
-int UserManagement::add_first_user(const MyChar<24> &username, const MyChar<32> &password, const MyChar<24> &name,
-                                   const MyChar<32> &mailAddr) {
-    User user(username, password, name, mailAddr, 10);
-    int offset = user_index.write(user);
-    user_data.insert(username, offset);
-    ++size;
-    return 0;
-}
-
 int UserManagement::add_user(const MyChar<24> &cur_username, const MyChar<24> &username, const MyChar<32> &password,
                              const MyChar<24> &name, const MyChar<32> &mailAddr, int privilege) {
+    if (size == 0) {
+        User user(username, password, name, mailAddr, 10);
+        int offset = user_index.write(user);
+        user_data.insert(username, offset);
+        ++size;
+        return 0;
+    }
     User user(username, password, name, mailAddr, privilege);
     auto cur_user = LoginInStack.find(cur_username);
     if (cur_user == LoginInStack.end()) {
@@ -119,19 +117,20 @@ std::pair<User, bool> UserManagement::modify_profile(const MyChar<24> &cur_usern
     return std::make_pair(user, true);
 }
 
+// 改成普通成员方法，不要写 static
 void UserManagement::clean_user_file() {
+    // —— 先把磁盘文件清空 ——
     std::ofstream ofs_data("user.data", std::ios::trunc | std::ios::binary);
     ofs_data.close();
-
     std::ofstream ofs_index("user.index", std::ios::trunc | std::ios::binary);
     int tmp = -1, tmp2 = 0;
     ofs_index.write(reinterpret_cast<char *>(&tmp), sizeof(int)); // root = -1
-    for (int i = 1; i < 2; ++i) {
-        ofs_index.write(reinterpret_cast<char *>(&tmp2), sizeof(int)); // size = 0
-    }
+    ofs_index.write(reinterpret_cast<char *>(&tmp2), sizeof(int)); // size = 0
     ofs_index.close();
-}
 
-void UserManagement::end() {
+    size = 0;
+    flag = false;
     LoginInStack.clear();
+
+    user_index.get_info(size, 1);
 }

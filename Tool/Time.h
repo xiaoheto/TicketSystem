@@ -14,8 +14,8 @@ extern int Month[13]; // 只声明，定义放在 Time.cpp 中
 class Date;
 
 class Clock {
-    int hour;
-    int minute;
+    int hour = 0;
+    int minute = 0;
 
     friend pair<Date, Clock> intToReadTime(Date day, Clock clock, int time);
     friend class Date;
@@ -143,7 +143,7 @@ class SaleDate {
     friend class TrainManagement;
     friend class TicketManagement;
 public:
-    SaleDate() = default;
+    SaleDate();
 
     SaleDate(const Date &st, const Date &en);
 

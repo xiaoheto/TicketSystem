@@ -144,6 +144,9 @@ ostream &operator<<(ostream &out, const Date &obj) {
 }
 
 // ===== SaleDate 类实现 =====
+SaleDate::SaleDate():startDate(Date()),endDate(Date()) {
+}
+
 SaleDate::SaleDate(const Date &st, const Date &en) : startDate(st), endDate(en) {}
 
 SaleDate::SaleDate(const SaleDate &other) : startDate(other.startDate), endDate(other.endDate) {}

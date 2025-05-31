@@ -87,44 +87,25 @@ int main() {
             MyChar<24> name;
             MyChar<32> mailAddr;
             int privilege = 10;
-            if (!user_management.flag) {
-                while (command.current < command.count) {
-                    string key = command.getNext();
-                    if (key == "-u") {
-                        username = command.getNext();
-                    } else if (key == "-p") {
-                        password = command.getNext();
-                    } else if (key == "-n") {
-                        name = command.getNext();
-                    } else if (key == "-m") {
-                        mailAddr = command.getNext();
-                    }
-                    command.current += 2;
+            while (command.current < command.count) {
+                string key = command.getNext();
+                if (key == "-c") {
+                    cur_username = command.getNext();
+                } else if (key == "-u") {
+                    username = command.getNext();
+                } else if (key == "-p") {
+                    password = command.getNext();
+                } else if (key == "-n") {
+                    name = command.getNext();
+                } else if (key == "-m") {
+                    mailAddr = command.getNext();
+                } else if (key == "-g") {
+                    privilege = command.str_to_int(command.getNext());
                 }
-                user_management.flag = true;
-                cout << command.timeStamp << ' ' << user_management.add_first_user(username, password, name, mailAddr)
-                        << '\n';
-            } else {
-                while (command.current < command.count) {
-                    string key = command.getNext();
-                    if (key == "-c") {
-                        cur_username = command.getNext();
-                    } else if (key == "-u") {
-                        username = command.getNext();
-                    } else if (key == "-p") {
-                        password = command.getNext();
-                    } else if (key == "-n") {
-                        name = command.getNext();
-                    } else if (key == "-m") {
-                        mailAddr = command.getNext();
-                    } else if (key == "-g") {
-                        privilege = command.str_to_int(command.getNext());
-                    }
-                    command.current += 2;
-                }
-                cout << command.timeStamp << ' ' << user_management.add_user(
-                    cur_username, username, password, name, mailAddr, privilege) << '\n';
+                command.current += 2;
             }
+            cout << command.timeStamp << ' ' << user_management.add_user(
+                cur_username, username, password, name, mailAddr, privilege) << '\n';
         } else if (command.cmd == "login") {
             MyChar<24> username;
             MyChar<32> password;
@@ -253,7 +234,7 @@ int main() {
             cout << command.timeStamp << ' ' << train_management.release_train(trainID) << '\n';
         } else if (command.cmd == "query_train") {
             MyChar<24> trainID;
-            Date d;
+            Date d = Date();
             while (command.current < command.count) {
                 string key = command.getNext();
                 if (key == "-i") {
@@ -268,7 +249,7 @@ int main() {
             cout << command.timeStamp << ' ';
             train_management.query_train(trainID, d);
         } else if (command.cmd == "query_ticket") {
-            Date d;
+            Date d = Date();
             MyChar<24> s;
             MyChar<24> t;
             string p;
@@ -295,7 +276,7 @@ int main() {
                 train_management.query_ticket_cost(d, s, t);
             }
         } else if (command.cmd == "query_transfer") {
-            Date d;
+            Date d = Date();
             MyChar<24> s;
             MyChar<24> t;
             string p;
@@ -322,7 +303,7 @@ int main() {
         } else if (command.cmd == "buy_ticket") {
             MyChar<24> username;
             MyChar<24> trainID;
-            Date d;
+            Date d = Date();
             MyChar<24> st;
             MyChar<24> en;
             int n;
@@ -350,18 +331,22 @@ int main() {
             }
             cout << command.timeStamp << ' ';
             if (q == "true") {
-                ticket_management.buy_ticket(username,trainID,d,st,en,n,true,user_management,train_management);
+                ticket_management.buy_ticket(username, trainID, d, st, en, n, true, user_management, train_management);
             } else if (q == "false") {
-                ticket_management.buy_ticket(username,trainID,d,st,en,n,false,user_management,train_management);
+                ticket_management.buy_ticket(username, trainID, d, st, en, n, false, user_management, train_management);
             }
         } else if (command.cmd == "query_order") {
             string u = command.getNext();
             MyChar<24> username = command.getNext();
-            cout << command.timeStamp << ' ';
-            ticket_management.query_order(username,user_management,train_management);
+            ticket_management.query_order(username, user_management, train_management);
         } else if (command.cmd == "refund_ticket") {
             MyChar<24> username;
             int n;
+            if (command.count == 3) {
+                string key = command.getNext();
+                username = command.getNext();
+                n = 1;
+            }
             while (command.current < command.count) {
                 string key = command.getNext();
                 if (key == "-u") {
@@ -372,15 +357,14 @@ int main() {
                 command.current += 2;
             }
             cout << command.timeStamp << ' ';
-            ticket_management.refund_ticket(username,user_management,train_management,n);
+            cout << ticket_management.refund_ticket(username, user_management, train_management, n) << '\n';
         } else if (command.cmd == "clean") {
-            user_management.clean_user_file();
-            cout << 0 << '\n';
             user_management.clean_user_file();
             train_management.clear_train_file();
             ticket_management.clear_ticket_file();
+            user_management.flag = false;
+            cout << 0 << '\n';
         } else if (command.cmd == "exit") {
-            user_management.end();
             cout << "bye" << '\n';
             user_management.LoginInStack.clear();
             break;
