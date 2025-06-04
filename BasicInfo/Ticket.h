@@ -4,8 +4,6 @@
 
 #ifndef TICKET_H
 #define TICKET_H
-#include <iostream>
-#include <string>
 #include "../Tool/MyChar.h"
 #include "../Tool/Time.h"
 

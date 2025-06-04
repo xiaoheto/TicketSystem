@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(TicketSystem_)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 
 include_directories(BPT)
 include_directories(BPT/STLite)
@@ -24,4 +24,5 @@ add_executable(code
         Tool/MyChar.h
         BPT/BPLusTree.h
         BPT/MemoryRiver.h
-        BPT/STLite/exceptions.h)
+        BPT/STLite/exceptions.h
+        Tool/Error.h)

@@ -4,33 +4,16 @@
 
 #ifndef TRAIN_H
 #define TRAIN_H
-#include <valarray>
 
 #include "../Tool/MyChar.h"
 #include "../Tool/Time.h"
-#include "../STLite/utility.h"
+#include "../BPT/STLite/utility.h"
 
 using sjtu::pair;
 
-inline pair<Date, Clock> intToReadTime(Date day, Clock clock, int time) {
-    clock.minute += time;
-    if (clock.minute >= 60) {
-        clock.hour += clock.minute / 60;
-        clock.minute %= 60;
-    }
-    if (clock.hour >= 24) {
-        day.day += clock.hour / 24;
-        clock.hour %= 24;
-    }
-    while (day.day > Month[day.month]) {
-        day.day -= Month[day.month];
-        day.month += 1;
-    }
-    return {day, clock};
-}
-
 class TrainManagement;
 class TicketManagement;
+
 class Station {
     MyChar<24> stationName;
     int price = 0; //到这一站的票价
@@ -40,6 +23,7 @@ class Station {
     friend class Train;
     friend class TrainManagement;
     friend class TicketManagement;
+
 public:
     Station() = default;
 
@@ -83,37 +67,45 @@ struct Seat {
 
 class TrainManagement;
 class TicketManagement;
+
 class Train {
-    MyChar<24> trainID;
+    MyChar<24> trainID = {'\0'};
     int stationNum = 0;
     MyChar<2> type;
     Station stations[100];
     int seatNum = 0;
-    Clock startTime;
-    SaleDate salesDate;
+    Clock startTime = Clock();
+    SalesDate salesDate = SalesDate();
     bool is_release = false;
     int index = 0;
 
     friend class TrainManagement;
     friend class TicketManagement;
+
 public:
     Train() = default;
 
+    Train(const MyChar<24> &trainID, int stationNum, const MyChar<2> &typ,
+          int seatNum, Clock start_time, const SalesDate &sales_date, int index): trainID(trainID),
+        stationNum(stationNum), type(typ), seatNum(seatNum), startTime(startTime),
+        index(index) {
+    }
+
     Train(const MyChar<24> &trainID, int stationNum, const MyChar<2> &type, Station stations[100], int seatNum,
-          const Clock &startTime, const SaleDate &sale_date, bool isRelease): trainID(trainID), stationNum(stationNum),
-                                                                              type(type),
-                                                                              seatNum(seatNum), startTime(startTime),
-                                                                              salesDate(sale_date),
-                                                                              is_release(isRelease) {
+          const Clock &startTime, const SalesDate &sale_date, bool isRelease): trainID(trainID), stationNum(stationNum),
+                                                                               type(type),
+                                                                               seatNum(seatNum), startTime(startTime),
+                                                                               salesDate(sale_date),
+                                                                               is_release(isRelease) {
         for (int i = 1; i <= stationNum; ++i) {
             this->stations[i] = stations[i];
         }
     }
 
     //trainID,stationNum,seatNum,startTime,saleDate,type;
-    Train(const MyChar<24> &trainID, int stationNum, int seatNum, const Clock &startTime, const SaleDate &salesdate,
+    Train(const MyChar<24> &trainID, int stationNum, int seatNum, const Clock &startTime, const SalesDate &sales_date,
           const MyChar<2> &type): trainID(trainID), stationNum(stationNum), seatNum(seatNum), startTime(startTime),
-                                  salesDate(salesdate) {
+                                  salesDate(sales_date) {
     }
 
     Train &operator=(const Train &other) {
@@ -146,25 +138,27 @@ public:
 
 class TrainManagement;
 class TicketManagement;
+
 class TrainInfo {
-    SaleDate date;
-    Clock clock;
+    SalesDate sales_date; //发车时间
+    Clock clock; //发车时间
     int index = 0;
     int maxSeats = 0;
 
     friend class TrainManagement;
     friend class TicketManagement;
+
 public:
     TrainInfo() = default;
 
-    TrainInfo(const SaleDate &d, const Clock &c, int ind, int se): date(d), clock(c), index(ind), maxSeats(se) {
+    TrainInfo(const SalesDate &d, const Clock &c, int ind, int se): sales_date(d), clock(c), index(ind), maxSeats(se) {
     }
 
     TrainInfo(const TrainInfo &other) = default;
 
     TrainInfo &operator=(const TrainInfo &other) {
         if (this != &other) {
-            date = other.date;
+            sales_date = other.sales_date;
             clock = other.clock;
             index = other.index;
             maxSeats = other.maxSeats;
@@ -270,6 +264,7 @@ class CompareTime {
 };
 
 class TrainManagement;
+
 class CompareTrans {
     CompareInfo a;
     CompareInfo b;
@@ -281,11 +276,14 @@ class CompareTrans {
     int cost;
 
     friend class TrainManagement;
+
 public:
     CompareTrans() = default;
 
-    CompareTrans(const CompareInfo &a,const CompareInfo &b,const pair <Date,Clock> &lea_start,
-        const pair <Date,Clock> &arr_mid,const pair <Date,Clock> &lea_mid,const pair <Date,Clock> &arr_end,int time,int price):start_leave(lea_start),trans_arrive(arr_mid),trans_leave(lea_mid),end_arrive(arr_end),time(time),cost(price) {
+    CompareTrans(const CompareInfo &a, const CompareInfo &b, const pair<Date, Clock> &lea_start,
+                 const pair<Date, Clock> &arr_mid, const pair<Date, Clock> &lea_mid, const pair<Date, Clock> &arr_end,
+                 int time, int price): start_leave(lea_start), trans_arrive(arr_mid), trans_leave(lea_mid),
+                                       end_arrive(arr_end), time(time), cost(price) {
         this->a = a;
         this->b = b;
     }

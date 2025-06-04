@@ -35,10 +35,10 @@ public:
     }
 
     MyChar(const MyChar &other) {
-        strmpy(myChar, other.myChar);
+        strcpy(myChar, other.myChar);
     }
 
-    bool empty() {
+    bool empty() const {
         return myChar[0] == '\0';
     }
 
@@ -58,7 +58,7 @@ public:
     }
 
     bool operator==(const MyChar &other) const {
-        return strcpy(myChar, other.myChar) == 0;
+        return strcmp(myChar, other.myChar) == 0;
     }
 
     bool operator!=(const MyChar &other) const {

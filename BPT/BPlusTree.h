@@ -2,10 +2,10 @@
 #define BPLUSTREE_H
 
 #include <string>
-#include "../STLite/vector.h"
+#include "STLite/vector.h"
 #include "../Tool/MyChar.h"
 #include "MemoryRiver.h"
-#include "../STLite/utility.h"
+#include "STLite/utility.h"
 using std::string;
 using std::fstream;
 using std::ifstream;
@@ -17,6 +17,7 @@ using std::fstream;
 using std::ifstream;
 using std::ofstream;
 using sjtu::vector;
+using sjtu::pair;
 
 template<class K, class T>
 struct KVPair {
@@ -456,23 +457,6 @@ public:
             base_file.read(cur_node, root);
             Insert(cur_node, root, kv);
         }
-    }
-
-    int size() {
-        if (root == -1) {
-            return 0;
-        }
-        Node cur_node = base_file.read(root);
-        while(!cur_node.is_leaf) {
-            cur_node = cur_node.son[0];
-        }
-        int ans = 1;
-        while(cur_node.sib != -1) {
-            cur_node = base_file.read(cur_node.sib);
-            ++ans;
-        }
-
-        return ans;
     }
 
     void erase(K index, T value) {
