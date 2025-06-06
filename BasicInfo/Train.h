@@ -69,7 +69,7 @@ class TrainManagement;
 class TicketManagement;
 
 class Train {
-    MyChar<24> trainID = {'\0'};
+    MyChar<24> trainID;
     int stationNum = 0;
     MyChar<2> type;
     Station stations[100];

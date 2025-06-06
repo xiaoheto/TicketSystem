@@ -21,13 +21,13 @@ class TrainManagement {
     MemoryRiver<Seat, 0> seat_index;
 
     BPTree<MyChar<24>, TrainStation> station_data; // trainID -> TrainStation
-
-    vector<int> delete_seat;
     MemoryRiver<int, 0> delete_index;
 
     int size = 0;
 
 public:
+    vector<int> delete_seat;
+
     TrainManagement(): train_data("train.data"), station_data("station.data") {
         train_index.initialise("train.index");
         seat_index.initialise("seat.index");
@@ -275,7 +275,160 @@ public:
         }
     }
 
-    void query_transfer()
+    void query_transfer(Date day, const MyChar<24> &s, const MyChar<24> &t, bool is_cost) {
+        vector<TrainStation> start_stations = station_data.query(s);
+        vector<TrainStation> end_stations = station_data.query(t);
+
+        CompareTrans final_ans;
+        bool is_first = true;
+
+        if (start_stations.empty() || end_stations.empty()) {
+            cout << 0 << '\n';
+            return;
+        }
+
+        for (int i = 0; i < start_stations.size(); ++i) {
+            vector<TrainInfo> res1 = train_data.query(start_stations[i].trainID);
+            Train train1;
+            train_index.read(train1, res1[0].index);
+
+            pair<Date, Clock> early1 = int_to_read_time(train1.salesDate.startDate, train1.startTime,
+                                                        start_stations[i].lea_time);
+            pair<Date, Clock> late1 = int_to_read_time(train1.salesDate.endDate, train1.startTime,
+                                                       start_stations[i].lea_time);
+
+            if (early1.first <= day && late1.first >= day) {
+                // 舍去day不在运行时间范围内的火车
+                for (int j = 0; j < end_stations.size(); ++j) {
+                    TrainStation start_station = start_stations[i];
+                    TrainStation end_station = end_stations[j];
+
+                    if (start_station.trainID == end_station.trainID) {
+                        continue;
+                    } //舍弃掉同一辆火车的情况
+                    Train train2;
+                    vector<TrainInfo> res2 = train_data.query(end_station.trainID);
+                    train_index.read(train2, res2[0].index);
+
+                    for (int m = start_station.stationNum + 1; m <= train1.stationNum; ++m) {
+                        for (int n = 0; n < end_station.stationNum; ++n) {
+                            if (train1.stations[m].stationName == train2.stations[n].stationName) {
+                                // 有相同的中转站
+                                TrainStation mid_station1 = start_stations[m];
+                                TrainStation mid_station2 = end_stations[n];
+                                pair<Date, Clock> lea_start, arr_mid, lea_mid, arr_end;
+
+                                Date ini_day1 = Date::find_ini_day(day, train1.startTime, start_station.lea_time);
+                                lea_start = int_to_read_time(ini_day1, train1.startTime, start_station.lea_time);
+                                arr_mid = int_to_read_time(ini_day1, train1.startTime, mid_station1.arr_time);
+
+                                pair<Date, Clock> lea_temp = int_to_read_time(
+                                    day, train2.startTime, mid_station2.lea_time);
+                                pair<Date, Clock> late = int_to_read_time(
+                                    train2.salesDate.endDate, train2.startTime, mid_station2.lea_time);
+                                pair<Date, Clock> early = int_to_read_time(
+                                    train2.salesDate.startDate, train2.startTime, mid_station2.lea_time);
+                                int tim, pri;
+
+                                if (arr_mid.first > late.first || (
+                                        arr_mid.first == late.first && arr_mid.second > late.second)) {
+                                    // 到中转站的时候train的中专火车已经离开
+                                    continue;
+                                }
+
+                                if (arr_mid.first < early.first) {
+                                    // 提前到达
+                                    lea_mid = {early.first, lea_temp.second};
+                                    arr_end = int_to_read_time(early.first, lea_mid.second,
+                                                               end_station.arr_time - mid_station2.lea_time);
+                                } else {
+                                    if (arr_mid.second < lea_temp.second) {
+                                        lea_mid = {arr_mid.first, lea_temp.second};
+                                    } else {
+                                        Date temp = arr_mid.first;
+                                        ++temp;
+                                        lea_mid = {temp, lea_temp.second};
+                                    }
+                                    arr_end = int_to_read_time(lea_mid.first, lea_mid.second,
+                                                               end_station.arr_time - mid_station2.lea_time);
+                                }
+
+                                int price1 = mid_station1.price - start_station.price;
+                                int price2 = end_station.price - mid_station2.price;
+
+                                int time1 = mid_station1.arr_time - start_station.lea_time;
+                                int time2 = end_station.arr_time - mid_station2.lea_time;
+                                int time_mid = lea_mid.second - arr_mid.second + 24 * 60 * (
+                                                   lea_mid.first - arr_mid.first);
+
+                                pri = price1 + price2;
+                                tim = time1 + time2 + time_mid;
+                                CompareInfo a(price1, time1, train1.trainID, i, m);
+                                CompareInfo b(price2, time2, train2.trainID, n, j);
+
+                                CompareTrans temp_ans(a, b, lea_start, arr_mid, lea_mid, arr_end, tim, pri);
+
+                                if (is_first) {
+                                    final_ans = temp_ans;
+                                } else {
+                                    if (is_cost) {
+                                        if (!final_ans.compareCost(temp_ans)) {
+                                            final_ans = temp_ans;
+                                        }
+                                    } else {
+                                        if (!final_ans.compareTime(temp_ans)) {
+                                            final_ans = temp_ans;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        vector<TrainInfo> a_train = train_data.query(final_ans.a.trainID);
+        vector<TrainInfo> b_train = train_data.query(final_ans.b.trainID);
+        Train a_, b_;
+        train_index.read(a_, a_train[0].index);
+        train_index.read(b_, b_train[0].index);
+        Seat seat1, seat2;
+        Date ini_day1 = Date::find_ini_day(day, a_.startTime, a_.stations[final_ans.a.start_].leaveTime);
+        int d_day1 = Date::get_d_day(a_.salesDate.startDate, ini_day1);
+        Date ini_day2 = Date::find_ini_day(final_ans.trans_leave.first, b_.startTime,
+                                           b_.stations[final_ans.b.start_].leaveTime);
+        int d_day2 = Date::get_d_day(b_.salesDate.startDate, ini_day2);
+
+        seat_index.read(seat1, 100 * a_.index + d_day1);
+        seat_index.read(seat2, 100 * b_.index + d_day2);
+        int seat_num1 = cal_cur_ticket(final_ans.a.start_, final_ans.a.end_, seat1, a_.seatNum);
+        int seat_num2 = cal_cur_ticket(final_ans.b.start_, final_ans.b.end_, seat2, b_.seatNum);
+
+        cout << a_.trainID << ' ' << a_.stations[final_ans.a.start_].stationName << ' ' << final_ans.start_leave.first
+                <<
+                ' ' << final_ans.start_leave.second << " -> " << a_.stations[final_ans.a.end_].stationName << ' ' <<
+                final_ans.trans_arrive.first << ' ' << final_ans.trans_arrive.second << ' ' << final_ans.a.price << ' '
+                <<
+                seat_num1 << '\n';
+        cout << b_.trainID << ' ' << b_.stations[final_ans.b.start_].stationName << ' ' << final_ans.trans_leave.first
+                <<
+                ' ' << final_ans.trans_leave.second << " -> " << b_.stations[final_ans.b.start_].stationName << ' ' <<
+                final_ans.end_arrive.first << ' ' << final_ans.end_arrive.second << ' ' << final_ans.b.price << ' ' <<
+                seat_num2 << '\n';
+    }
+
+    static void clean_train_file() {
+        std::filesystem::path path1("train.data");
+        std::filesystem::path path2("train.index");
+        std::filesystem::path path3("station.data");
+        std::filesystem::path path4("seat.index");
+        std::filesystem::path path5("delete.index");
+        if (exists(path1)) std::filesystem::remove(path1);
+        if (exists(path2)) std::filesystem::remove(path2);
+        if (exists(path3)) std::filesystem::remove(path3);
+        if (exists(path4)) std::filesystem::remove(path4);
+        if (exists(path4)) std::filesystem::remove(path5);
+    }
 
     static pair<Date, Clock> int_to_read_time(Date ini_day, Clock startTime, int time) {
         startTime.minute += time;

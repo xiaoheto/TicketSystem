@@ -30,8 +30,8 @@ public:
     Ticket() = default;
 
     Ticket(const MyChar<24> &username, const MyChar<24> &trainID, int start, int end, const Date &date, State state,
-           int time,int num)
-        : username(username), trainID(trainID), start_(start), end_(end), day(date), state(state), time(time),num(num) {
+           int time,int num,int index)
+        : username(username), trainID(trainID), start_(start), end_(end), day(date), state(state), time(time),num(num),index(index) {
     }
 
     Ticket(const Ticket &other) = default;
@@ -45,6 +45,7 @@ public:
             day = other.day;
             state = other.state;
             time = other.time;
+            index = other.index;
         }
         return *this;
     }

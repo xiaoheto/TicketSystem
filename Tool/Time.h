@@ -30,8 +30,8 @@ public:
     Clock(const Clock &other) = default;
 
     Clock(const string &s) {
-        hour = std::stoi(s.substr(0,2));
-        minute = std::stoi(s.substr(3,2));
+        hour = std::stoi(s.substr(0, 2));
+        minute = std::stoi(s.substr(3, 2));
     }
 
     Clock &operator=(const Clock &other) {
@@ -42,6 +42,32 @@ public:
         return *this;
     }
 
+    bool operator<(const Clock &other) const {
+        if (hour != other.hour) {
+            return hour < other.hour;
+        }
+        return minute < other.minute;
+    }
+
+    bool operator==(const Clock &other) const {
+        return hour == other.hour && minute == other.minute;
+    }
+
+    bool operator<=(const Clock &other) const {
+        return *this < other || *this == other;
+    }
+
+    bool operator>=(const Clock &other)const {
+        return !(*this < other);
+    }
+
+    bool operator>(const Clock &other) const {
+        if (hour != other.hour) {
+            return hour > other.hour;
+        }
+        return minute > other.minute;
+    }
+
     static bool checkClockValid(const Clock &clock) {
         return clock.hour >= 0 && clock.hour < 24 && clock.minute >= 0 && clock.minute < 60;
     }
@@ -50,7 +76,7 @@ public:
         return (hour - other.hour) * 60 + minute - other.minute;
     }
 
-    friend ostream &operator<<(ostream &out,const Clock &obj) {
+    friend ostream &operator<<(ostream &out, const Clock &obj) {
         out << obj.hour << ':' << obj.minute;
         return out;
     }
@@ -59,6 +85,7 @@ public:
 class SalesDate;
 class TrainManagement;
 class TicketManagement;
+
 class Date {
     friend class TrainManagement;
     friend class TicketManagement;
@@ -71,12 +98,12 @@ public:
 
     Date(const Date &other) = default;
 
-    Date(int m,int d):month(m),day(d) {
+    Date(int m, int d): month(m), day(d) {
     }
 
     Date(const string &s) {
-        month = std::stoi(s.substr(0,2));
-        day = std::stoi(s.substr(3,2));
+        month = std::stoi(s.substr(0, 2));
+        day = std::stoi(s.substr(3, 2));
     }
 
     Date &operator=(const Date &other) {
@@ -103,6 +130,14 @@ public:
         return day < other.day;
     }
 
+    bool operator<=(const Date &other) const {
+        return *this < other || *this == other;
+    }
+
+    bool operator>=(const Date &other)const {
+        return !(*this < other);
+    }
+
     bool operator>(const Date &other) const {
         if (month != other.month) {
             return month > other.month;
@@ -115,18 +150,34 @@ public:
             return day - other.day;
         }
         int temp = 0;
-        for(int i = other.month + 1;i < month;++i) {
+        for (int i = other.month + 1; i < month; ++i) {
             temp += Month[i];
         }
         return temp + day + Month[other.month] - other.day;
     }
 
-    friend ostream &operator<<(ostream &out,const Date &obj) {
+    Date &operator++() {
+        if (day == Month[month]) {
+            day = 1;
+            ++month;
+            return *this;
+        }
+        ++day;
+        return *this;
+    }
+
+    Date operator++(int n) {
+        Date temp = *this;
+        ++(*this);
+        return temp;
+    }
+
+    friend ostream &operator<<(ostream &out, const Date &obj) {
         out << obj.month << '-' << obj.day;
         return out;
     }
 
-    static Date find_ini_day(const Date &cur_date,const Clock &startTime,int time) {
+    static Date find_ini_day(const Date &cur_date, const Clock &startTime, int time) {
         Date res = cur_date;
         Clock ini_time = startTime;
 
@@ -154,7 +205,7 @@ public:
 
     static int get_d_day(const Date &ini_day, const Date &cur_day) {
         int res = 0;
-        for (int i = ini_day.month + 1;i < cur_day.month;++i) {
+        for (int i = ini_day.month + 1; i < cur_day.month; ++i) {
             res += Month[i];
         }
 
@@ -171,6 +222,7 @@ public:
 class UserManagement;
 class TrainManagement;
 class TicketManagement;
+
 class SalesDate {
     friend class UserManagement;
     friend class TrainManagement;
@@ -182,7 +234,7 @@ public:
 
     SalesDate() = default;
 
-    SalesDate(const Date &d1,const Date &d2):startDate(d1),endDate(d2) {
+    SalesDate(const Date &d1, const Date &d2): startDate(d1), endDate(d2) {
     }
 
     SalesDate(const SalesDate &other) = default;

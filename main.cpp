@@ -37,11 +37,23 @@ SalesDate getSalesDate(const string &input) {
     string ans1 = temp.getNext();
     string ans2 = temp.getNext();
     SalesDate ans(ans1, ans2);
+    return ans;
 }
 
 Clock getStartTime(const string &s) {
     Clock clock(s);
     return clock;
+}
+
+int get_time(const string &input) {
+    string temp = input.substr(1);
+    string res;
+    for (auto i: temp) {
+        if (i != ']') {
+            res += i;
+        }
+    }
+    return stoi(res);
 }
 
 int main() {
@@ -225,9 +237,119 @@ int main() {
             }
             cout << command.timeStamp << ' ';
             train_management.query_train(trainID, d);
+        } else if (command.cmd == "query_ticket") {
+            Date d;
+            MyChar<24> s;
+            MyChar<24> t;
+            string p;
+            while (command.current < command.count) {
+                string key = command.getNext();
+                if (key == "-s") {
+                    s = command.getNext();
+                } else if (key == "-t") {
+                    t = command.getNext();
+                } else if (key == "-d") {
+                    string temp = command.getNext();
+                    Date tt(temp);
+                    d = tt;
+                } else if (key == "-p") {
+                    p = command.getNext();
+                }
+                command.current += 2;
+            }
+            if (p == "time") {
+                cout << command.timeStamp << ' ';
+                train_management.query_ticket(d, s, t, false);
+            } else if (p == "cost") {
+                cout << command.timeStamp << ' ';
+                train_management.query_ticket(d, s, t, true);
+            }
+        } else if (command.cmd == "query_transfer") {
+            Date d;
+            MyChar<24> s;
+            MyChar<24> t;
+            string p;
+            while (command.current < command.count) {
+                string key = command.getNext();
+                if (key == "-s") {
+                    s = command.getNext();
+                } else if (key == "-t") {
+                    t = command.getNext();
+                } else if (key == "-d") {
+                    string temp = command.getNext();
+                    Date tt(temp);
+                    d = tt;
+                } else if (key == "-p") {
+                    p = command.getNext();
+                }
+                command.current += 2;
+            }
+            if (p == "time") {
+                train_management.query_transfer(d, s, t, false);
+            } else if (p == "cost") {
+                train_management.query_transfer(d, s, t, true);
+            }
+        } else if (command.cmd == "buy_ticket") {
+            MyChar<24> username;
+            MyChar<24> trainID;
+            Date d;
+            MyChar<24> st;
+            MyChar<24> en;
+            int n;
+            string q;
+            while (command.current < command.count) {
+                string key = command.getNext();
+                if (key == "-u") {
+                    username = command.getNext();
+                } else if (key == "-i") {
+                    trainID = command.getNext();
+                } else if (key == "-d") {
+                    string temp = command.getNext();
+                    Date dd(temp);
+                    d = dd;
+                } else if (key == "-f") {
+                    st = command.getNext();
+                } else if (key == "-t") {
+                    en = command.getNext();
+                } else if (key == "-n") {
+                    n = command.str_to_int(command.getNext());
+                } else if (key == "-q") {
+                    q = command.getNext();
+                }
+                command.current += 2;
+            }
+            cout << command.timeStamp << ' ';
+            if (q == "true") {
+                ticket_management.buy_ticket(get_time(command.timeStamp), username, trainID, d, st, en, n, true,
+                                             user_management, train_management);
+            } else if (q == "false") {
+                ticket_management.buy_ticket(get_time(command.timeStamp), username, trainID, d, st, en, n, false,
+                                             user_management, train_management);
+            }
+        } else if (command.cmd == "query_order") {
+            string u = command.getNext();
+            MyChar<24> username = command.getNext();
+            ticket_management.query_order(username, user_management, train_management);
+        } else if (command.cmd == "refund_ticket") {
+            MyChar<24> username;
+            int n = -1;
+            while (command.current < command.count) {
+                string key = command.getNext();
+                if (key == "-u") {
+                    username = command.getNext();
+                } else if (key == "-n") {
+                    n = command.str_to_int(command.getNext());
+                }
+                command.current += 2;
+            }
+            cout << command.timeStamp << ' ';
+            cout << ticket_management.refund_ticket(username, n, user_management, train_management);
         } else if (command.cmd == "clean") {
             user_management.clean_user_file();
             user_management.LogInStack.clear();
+            train_management.clean_train_file();
+            train_management.delete_seat.clear();
+            ticket_management.clean_ticket_file();
             cout << command.timeStamp << ' ' << 0 << '\n';
         } else if (command.cmd == "exit") {
             cout << command.timeStamp << ' ' << "bye" << '\n';
