@@ -156,6 +156,9 @@ public:
 
     TrainInfo(const TrainInfo &other) = default;
 
+    bool operator>(const TrainInfo &other) const {
+        return index > other.index;
+    }
     TrainInfo &operator=(const TrainInfo &other) {
         if (this != &other) {
             sales_date = other.sales_date;
@@ -192,6 +195,17 @@ public:
 
     TrainStation(const TrainInfo &info, const MyChar<24> &trainID, int staNum, int pri, int arr, int lea): info(info),
         trainID(trainID), stationNum(staNum), price(pri), arr_time(arr), lea_time(lea) {
+    }
+
+    bool operator>(const TrainStation &other) const {
+        if (trainID != other.trainID) {
+            return trainID > other.trainID;
+        }
+        return stationNum > other.stationNum;
+    }
+
+    bool operator==(const TrainStation &other) const {
+        return trainID == other.trainID && stationNum == other.stationNum;
     }
 
     TrainStation(const TrainStation &other) = default;
@@ -246,6 +260,7 @@ public:
 };
 
 class CompareCost {
+public:
     bool operator()(const CompareInfo &a, const CompareInfo &b) const {
         if (a.price != b.price) {
             return a.price < b.price;
@@ -255,6 +270,7 @@ class CompareCost {
 };
 
 class CompareTime {
+public:
     bool operator()(const CompareInfo &a, const CompareInfo &b) const {
         if (a.time != b.time) {
             return a.time < b.time;

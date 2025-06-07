@@ -22,7 +22,7 @@ public:
         ticket_index.initialise("ticket.index");
     }
 
-    ~TicketManagement();
+    ~TicketManagement() = default;
 
     void buy_ticket(int time, const MyChar<24> &username, const MyChar<24> &trainID, const Date &d,
                     const MyChar<24> &start_station, const MyChar<24> &end_station, int n, bool q, UserManagement &user,

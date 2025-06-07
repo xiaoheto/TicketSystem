@@ -1,5 +1,5 @@
-#ifndef TRAINMANAGEMENT_H;
-#define TRAINMANAGEMENT_H;
+#ifndef TRAINMANAGEMENT_H
+#define TRAINMANAGEMENT_H
 
 #include "../BPT/BPlusTree.h"
 #include "../BPT/MemoryRiver.h"

@@ -77,6 +77,29 @@ public:
     TrainTicketInfo(const MyChar<24> &trainID, const Date &d): trainID(trainID), day(d) {
     }
 
+    bool operator<(const TrainTicketInfo &other) const {
+        if (trainID != other.trainID) {
+            return trainID < other.trainID;
+        }
+        return day < other.day;
+    }
+
+    bool operator==(const TrainTicketInfo &other) const {
+        return trainID == other.trainID && day == other.day;
+    }
+
+    bool operator<=(const TrainTicketInfo &other) const {
+        return *this == other || *this < other;
+    }
+
+    bool operator>(const TrainTicketInfo &other) const {
+        return !(*this <= other);
+    }
+
+    bool operator>=(const TrainTicketInfo &other) const {
+        return *this > other || *this == other;
+    }
+
     TrainTicketInfo(const TrainTicketInfo &other) = default;
 
     TrainTicketInfo &operator=(const TrainTicketInfo &other) {
